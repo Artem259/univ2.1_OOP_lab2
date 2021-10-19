@@ -1,0 +1,6 @@
+/build-SmartClock-Desktop_Qt_6_1_3_MinGW_64_bit-Debug/
+/.idea/
+/SmartClock/cmake-build-debug/
+
+/SmartClock/CMakeLists.txt
+/SmartClock/CMakeLists.txt.user
