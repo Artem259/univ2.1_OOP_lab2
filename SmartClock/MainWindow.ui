@@ -72,9 +72,10 @@
       <string>Types</string>
      </property>
      <addaction name="actionTimers"/>
+     <addaction name="actionAlarm_clocks"/>
     </widget>
     <addaction name="menuType"/>
-    <addaction name="actionStatus"/>
+    <addaction name="actionStatuses"/>
    </widget>
    <widget class="QMenu" name="menuTable">
     <property name="title">
@@ -150,14 +151,39 @@
     <string>New alarm-clock</string>
    </property>
   </action>
-  <action name="actionStatus">
+  <action name="actionStatuses">
    <property name="text">
     <string>Statuses</string>
    </property>
   </action>
   <action name="actionTimers">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="Resource.qrc">
+     <normaloff>:/prefix1/images/timer.png</normaloff>:/prefix1/images/timer.png</iconset>
+   </property>
    <property name="text">
     <string>Timers</string>
+   </property>
+  </action>
+  <action name="actionAlarm_clocks">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="Resource.qrc">
+     <normaloff>:/prefix1/images/alarm-clock.png</normaloff>:/prefix1/images/alarm-clock.png</iconset>
+   </property>
+   <property name="text">
+    <string>Alarm-clocks</string>
    </property>
   </action>
  </widget>
