@@ -16,7 +16,11 @@ public:
     ~MainWindow();
 
 
+private slots:
+    void on_table_customContextMenuRequested(const QPoint &pos);
+
 private:
     Ui::MainWindow *ui;
 };
-#endif // MAINWINDOW_H
+
+#endif
