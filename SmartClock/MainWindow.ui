@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1074</width>
-    <height>605</height>
+    <width>863</width>
+    <height>465</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -15,6 +15,9 @@
   </property>
   <property name="autoFillBackground">
    <bool>false</bool>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">background-color: rgb(148, 203, 255);</string>
   </property>
   <property name="iconSize">
    <size>
@@ -26,6 +29,9 @@
    <layout class="QGridLayout" name="gridLayout">
     <item row="0" column="0">
      <widget class="QTableWidget" name="table">
+      <property name="mouseTracking">
+       <bool>true</bool>
+      </property>
       <property name="focusPolicy">
        <enum>Qt::NoFocus</enum>
       </property>
@@ -49,12 +55,18 @@
 
 QTableCornerButton::section 
 {
-	
+	 Background-color: rgb(220, 240, 255);
+    Border-left: 1px solid;  
 }
 
 QHeaderView::section 
 { 
-	
+	   Background-color: rgb(220, 240, 255);
+}
+
+QTableView
+{
+     background-color: rgb(220, 240, 255)
 }</string>
       </property>
       <property name="editTriggers">
@@ -120,7 +132,7 @@ QHeaderView::section
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1074</width>
+     <width>863</width>
      <height>21</height>
     </rect>
    </property>
@@ -136,11 +148,24 @@ QHeaderView::section
    <property name="enabled">
     <bool>true</bool>
    </property>
+   <property name="cursor">
+    <cursorShape>UpArrowCursor</cursorShape>
+   </property>
+   <property name="mouseTracking">
+    <bool>false</bool>
+   </property>
+   <property name="focusPolicy">
+    <enum>Qt::NoFocus</enum>
+   </property>
    <property name="windowTitle">
     <string>toolBar</string>
    </property>
    <property name="layoutDirection">
     <enum>Qt::LeftToRight</enum>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">background-color: rgb(129, 190, 255);
+border: none;</string>
    </property>
    <property name="movable">
     <bool>true</bool>
