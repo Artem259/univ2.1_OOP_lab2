@@ -8,7 +8,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     ui->toolBar->setCursor(Qt::PointingHandCursor);
 
     QStringList horizHeaders;
-    horizHeaders << "Queue" << "Title" << "Type" << "Value" << "Status" << "Time left";
+    horizHeaders << "Queue" << "Title" << "Type" << "Status" << "Value" << "End time" << "Time left";
     ui->table->setColumnCount(horizHeaders.size());
     ui->table->setHorizontalHeaderLabels(horizHeaders);
     ui->table->horizontalHeader()->setDefaultAlignment(Qt::AlignLeft);
@@ -43,8 +43,9 @@ void MainWindow::on_table_customContextMenuRequested(const QPoint &pos)
 {
     QMenu *menu = new QMenu(this);
 
-    //menu->setStyleSheet("color: black;");
-    menu->setCursor(Qt::PointingHandCursor);
+    menu->setStyleSheet("QMenu{background-color: rgb(204, 232, 255);}"
+                        "QMenu:hover{background-color: red;}");
+    //menu->setCursor(Qt::PointingHandCursor);
 
     menu->addAction(new QAction("Action 1", this));
     menu->addAction(new QAction("Action 2", this));

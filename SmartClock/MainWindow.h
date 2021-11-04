@@ -17,7 +17,7 @@ public:
 
 
 private slots:
-    void on_table_customContextMenuRequested(const QPoint &pos);
+    void on_table_customContextMenuRequested(const QPoint &pos);    
 
 
 private:

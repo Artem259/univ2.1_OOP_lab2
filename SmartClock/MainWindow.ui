@@ -48,12 +48,12 @@
        <string notr="true">QTableView::item:selected
 {
 	
-	background-color: rgb(204, 232, 255);
+	background-color: rgb(190, 221, 255);
 	color: black;
 	font-weight: 900;
 }
 
-QTableCornerButton::section 
+QTableCornerButton::section
 {
 	 Background-color: rgb(220, 240, 255);
     Border-left: 1px solid;  
@@ -189,6 +189,18 @@ border: none;</string>
    <addaction name="actionAlarm_clock"/>
    <addaction name="separator"/>
   </widget>
+  <action name="actionNew_clock">
+   <property name="icon">
+    <iconset>
+     <normaloff>:/prefix1/images/add_clock.png</normaloff>:/prefix1/images/add_clock.png</iconset>
+   </property>
+   <property name="text">
+    <string>New clock</string>
+   </property>
+   <property name="toolTip">
+    <string>New clock</string>
+   </property>
+  </action>
   <action name="actionAlarm_clock">
    <property name="checked">
     <bool>false</bool>
