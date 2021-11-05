@@ -1,5 +1,6 @@
 #include <QHeaderView>
 #include "MainWindow.h"
+#include "ClockWindow.h"
 #include "./ui_MainWindow.h"
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow)
@@ -8,7 +9,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     ui->toolBar->setCursor(Qt::PointingHandCursor);
 
     QStringList horizHeaders;
-    horizHeaders << "Queue" << "Title" << "Type" << "Status" << "Value" << "End time" << "Time left";
+    horizHeaders << "№" << "Title" << "Type" << "Status" << "Value" << "End time" << "Time left";
     ui->table->setColumnCount(horizHeaders.size());
     ui->table->setHorizontalHeaderLabels(horizHeaders);
     ui->table->horizontalHeader()->setDefaultAlignment(Qt::AlignLeft);
@@ -20,15 +21,15 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     ui->table->insertRow(ui->table->rowCount());
     ui->table->insertRow(ui->table->rowCount());
 
-    ui->table->setItem(0,0,new QTableWidgetItem("1"));
+    ui->table->setItem(0,0,new QTableWidgetItem("0"));
     ui->table->setItem(0,1,new QTableWidgetItem("2"));
     ui->table->setItem(0,2,new QTableWidgetItem("Ab"));
 
-    ui->table->setItem(1,0,new QTableWidgetItem("3"));
+    ui->table->setItem(1,0,new QTableWidgetItem("1"));
     ui->table->setItem(1,1,new QTableWidgetItem("4"));
     ui->table->setItem(1,2,new QTableWidgetItem("Ac"));
 
-    ui->table->setItem(2,0,new QTableWidgetItem("5"));
+    ui->table->setItem(2,0,new QTableWidgetItem("2"));
     ui->table->setItem(2,1,new QTableWidgetItem("6"));
     ui->table->setItem(2,2,new QTableWidgetItem("Acс"));
 
@@ -42,13 +43,40 @@ MainWindow::~MainWindow()
 void MainWindow::on_table_customContextMenuRequested(const QPoint &pos)
 {
     QMenu *menu = new QMenu(this);
-
     menu->setStyleSheet("QMenu{background-color: rgb(204, 232, 255);}"
                         "QMenu:hover{background-color: red;}");
-    //menu->setCursor(Qt::PointingHandCursor);
+    QAction *add_new, *start, *stop, *edit, *remove;
 
-    menu->addAction(new QAction("Action 1", this));
-    menu->addAction(new QAction("Action 2", this));
-    menu->addAction(new QAction("Action 3", this));
+    QModelIndexList selected = ui->table->selectionModel()->selectedRows();
+    if(selected.size()==0)
+    {
+        add_new = new QAction("Add new", this);
+        menu->addAction(add_new);
+    }
+    else if(selected.size()==1)
+    {
+        start = new QAction("Start", this);
+        stop = new QAction("Stop", this);
+        edit = new QAction("Edit", this);
+        remove = new QAction("Remove", this);
+        menu->addAction(start);
+        menu->addAction(stop);
+        menu->addSeparator();
+        menu->addAction(edit);
+        menu->addAction(remove);
+    }
+    else
+    {
+        start = new QAction("Start", this);
+        stop = new QAction("Stop", this);
+        remove = new QAction("Remove", this);
+        menu->addAction(start);
+        menu->addAction(stop);
+        menu->addSeparator();
+        menu->addAction(remove);
+    }
+
     menu->popup(ui->table->viewport()->mapToGlobal(pos));
+
+    //connect(add_new, &QAction::trigger, this, SLOT();
 }
