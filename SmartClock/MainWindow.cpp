@@ -35,6 +35,14 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 
 }
 
+void MainWindow::addNew()
+{
+    auto clockWindow = new ClockWindow(this);
+    clockWindow->setModal(true);
+    clockWindow->setWindowTitle("New Clock");
+    clockWindow->show();
+}
+
 MainWindow::~MainWindow()
 {
     delete ui;
@@ -45,13 +53,14 @@ void MainWindow::on_table_customContextMenuRequested(const QPoint &pos)
     QMenu *menu = new QMenu(this);
     menu->setStyleSheet("QMenu{background-color: rgb(204, 232, 255);}"
                         "QMenu:hover{background-color: red;}");
-    QAction *add_new, *start, *stop, *edit, *remove;
+    QAction *add_new(nullptr), *start(nullptr), *stop(nullptr), *edit(nullptr), *remove(nullptr);
 
     QModelIndexList selected = ui->table->selectionModel()->selectedRows();
     if(selected.size()==0)
     {
         add_new = new QAction("Add new", this);
         menu->addAction(add_new);
+
     }
     else if(selected.size()==1)
     {
@@ -76,7 +85,7 @@ void MainWindow::on_table_customContextMenuRequested(const QPoint &pos)
         menu->addAction(remove);
     }
 
-    menu->popup(ui->table->viewport()->mapToGlobal(pos));
+    if(add_new) connect(add_new, SIGNAL(triggered()), this, SLOT(addNew()));
 
-    //connect(add_new, &QAction::trigger, this, SLOT();
+    menu->popup(ui->table->viewport()->mapToGlobal(pos));
 }
