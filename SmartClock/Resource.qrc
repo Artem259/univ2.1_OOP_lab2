@@ -1,6 +1,6 @@
 <RCC>
     <qresource prefix="/prefix1">
-        <file>images/alarm-clock.png</file>
+        <file>images/alarm_clock.png</file>
         <file>images/timer.png</file>
     </qresource>
 </RCC>

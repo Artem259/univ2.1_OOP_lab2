@@ -37,7 +37,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 
 void MainWindow::addNew()
 {
-    auto clockWindow = new ClockWindow(this);
+    auto clockWindow = new ClockWindow(this, true);
     clockWindow->setModal(true);
     clockWindow->setWindowTitle("New Clock");
     clockWindow->show();

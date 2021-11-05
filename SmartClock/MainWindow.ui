@@ -185,55 +185,9 @@ border: none;</string>
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
-   <addaction name="actionTimer"/>
-   <addaction name="actionAlarm_clock"/>
    <addaction name="separator"/>
   </widget>
-  <action name="actionNew_clock">
-   <property name="icon">
-    <iconset>
-     <normaloff>:/prefix1/images/add_clock.png</normaloff>:/prefix1/images/add_clock.png</iconset>
-   </property>
-   <property name="text">
-    <string>New clock</string>
-   </property>
-   <property name="toolTip">
-    <string>New clock</string>
-   </property>
-  </action>
-  <action name="actionAlarm_clock">
-   <property name="checked">
-    <bool>false</bool>
-   </property>
-   <property name="icon">
-    <iconset resource="Resource.qrc">
-     <normaloff>:/prefix1/images/alarm-clock.png</normaloff>:/prefix1/images/alarm-clock.png</iconset>
-   </property>
-   <property name="text">
-    <string>New alarm-clock</string>
-   </property>
-   <property name="toolTip">
-    <string>New alarm-clock</string>
-   </property>
-  </action>
-  <action name="actionTimer">
-   <property name="checked">
-    <bool>false</bool>
-   </property>
-   <property name="icon">
-    <iconset resource="Resource.qrc">
-     <normaloff>:/prefix1/images/timer.png</normaloff>:/prefix1/images/timer.png</iconset>
-   </property>
-   <property name="text">
-    <string>New timer</string>
-   </property>
-   <property name="toolTip">
-    <string>New timer</string>
-   </property>
-  </action>
  </widget>
- <resources>
-  <include location="Resource.qrc"/>
- </resources>
+ <resources/>
  <connections/>
 </ui>

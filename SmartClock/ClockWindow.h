@@ -15,16 +15,20 @@ class ClockWindow : public QDialog
     Q_OBJECT
 
 public:
-    explicit ClockWindow(QWidget *parent);
+    explicit ClockWindow(QWidget *parent, bool newClock, size_t row=0);
     ~ClockWindow();
     void setData(QString title, short radio, QTime time);
 
 
+private slots:
+    void on_buttonBox_accepted();
+
+    void on_buttonBox_rejected();
+
 private:
     Ui::ClockWindow *ui;
-    QString title;
-    short radio;
-    QTime time;
+    bool newClock;
+    size_t row;
 };
 
 #endif
