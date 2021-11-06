@@ -1,5 +1,6 @@
 #include <QHeaderView>
 #include "MainWindow.h"
+#include "Clock.h"
 #include "ClockWindow.h"
 #include "./ui_MainWindow.h"
 
@@ -14,33 +15,33 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     ui->table->setHorizontalHeaderLabels(horizHeaders);
     ui->table->horizontalHeader()->setDefaultAlignment(Qt::AlignLeft);
     ui->table->verticalHeader()->setDefaultSectionSize(20);
-
-
-
-    ui->table->insertRow(ui->table->rowCount());
-    ui->table->insertRow(ui->table->rowCount());
-    ui->table->insertRow(ui->table->rowCount());
-
-    ui->table->setItem(0,0,new QTableWidgetItem("0"));
-    ui->table->setItem(0,1,new QTableWidgetItem("2"));
-    ui->table->setItem(0,2,new QTableWidgetItem("Ab"));
-
-    ui->table->setItem(1,0,new QTableWidgetItem("1"));
-    ui->table->setItem(1,1,new QTableWidgetItem("4"));
-    ui->table->setItem(1,2,new QTableWidgetItem("Ac"));
-
-    ui->table->setItem(2,0,new QTableWidgetItem("2"));
-    ui->table->setItem(2,1,new QTableWidgetItem("6"));
-    ui->table->setItem(2,2,new QTableWidgetItem("Acс"));
-
 }
 
-void MainWindow::addNew()
+void MainWindow::addNewClockWindow()
 {
     auto clockWindow = new ClockWindow(this, true);
     clockWindow->setModal(true);
     clockWindow->setWindowTitle("New Clock");
     clockWindow->show();
+}
+
+void MainWindow::addNewClock(Clock *clock)
+{
+    clock->setStatus(0);
+    clock->setId(this->clocks.size());
+    this->clocks.push_back(*clock);
+    size_t row = ui->table->rowCount();
+    ui->table->insertRow(row);
+    ui->table->setItem(row,0,new QTableWidgetItem());
+    ui->table->setItem(row,1,new QTableWidgetItem());
+    ui->table->setItem(row,2,new QTableWidgetItem());
+    ui->table->setItem(row,3,new QTableWidgetItem());
+    ui->table->setItem(row,4,new QTableWidgetItem());
+    ui->table->setItem(row,5,new QTableWidgetItem());
+    ui->table->setItem(row,6,new QTableWidgetItem());
+
+    clock->printToTable(row);
+    delete clock;
 }
 
 MainWindow::~MainWindow()
@@ -85,7 +86,7 @@ void MainWindow::on_table_customContextMenuRequested(const QPoint &pos)
         menu->addAction(remove);
     }
 
-    if(add_new) connect(add_new, SIGNAL(triggered()), this, SLOT(addNew()));
+    if(add_new) connect(add_new, SIGNAL(triggered()), this, SLOT(addNewClockWindow()));
 
     menu->popup(ui->table->viewport()->mapToGlobal(pos));
 }
