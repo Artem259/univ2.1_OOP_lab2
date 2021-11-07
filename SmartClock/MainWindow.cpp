@@ -1,6 +1,5 @@
 #include <QHeaderView>
 #include "MainWindow.h"
-#include "Clock.h"
 #include "ClockWindow.h"
 #include "./ui_MainWindow.h"
 
@@ -31,6 +30,18 @@ void MainWindow::addNewClock(Clock *clock)
     clock->setId(this->clocks.size());
     this->clocks.push_back(*clock);
     size_t row = ui->table->rowCount();
+    /*ui->table->insertRow(row);
+    ui->table->setItem(row,0,new QTableWidgetItem());
+    ui->table->setItem(row,1,new QTableWidgetItem());
+    ui->table->setItem(row,2,new QTableWidgetItem());
+    ui->table->setItem(row,3,new QTableWidgetItem());
+    ui->table->setItem(row,4,new QTableWidgetItem());
+    ui->table->setItem(row,5,new QTableWidgetItem());
+    ui->table->setItem(row,6,new QTableWidgetItem());*/
+    qDebug()<<&ui;
+    clock->printToTable(row);
+    qDebug()<<ui->table->rowCount();
+/*
     ui->table->insertRow(row);
     ui->table->setItem(row,0,new QTableWidgetItem());
     ui->table->setItem(row,1,new QTableWidgetItem());
@@ -39,8 +50,31 @@ void MainWindow::addNewClock(Clock *clock)
     ui->table->setItem(row,4,new QTableWidgetItem());
     ui->table->setItem(row,5,new QTableWidgetItem());
     ui->table->setItem(row,6,new QTableWidgetItem());
-
-    clock->printToTable(row);
+    //"№" << "Title" << "Type" << "Status" << "Value" << "End time" << "Time left";
+    //№
+    ui->table->item(row,0)->setText(QString::number(clock->getId()+1));
+    //Title
+    ui->table->item(row,1)->setText(clock->getTitle());
+    //Type
+    if(clock->getType()==0) ui->table->item(row,2)->setText("Timer");
+    else if(clock->getType()==1) ui->table->item(row,2)->setText("Alarm clock");
+    //Status
+    if(clock->getStatus()==1) ui->table->item(row,3)->setText("Active");
+    //Value
+    ui->table->item(row,4)->setText(clock->getValue().toString("hh::mm::ss"));
+    //End time
+    if(clock->getStatus()==1)
+    {
+        ui->table->item(row,5)->setText(clock->getValue().toString("hh::mm::ss"));
+    }
+    //Time left
+    if(clock->getStatus()==1)
+    {
+        QTime timeLeft = QTime().addSecs(clock->getEndTime() - QDateTime::currentSecsSinceEpoch());
+        ui->table->item(row,6)->setText(timeLeft.toString("hh::mm::ss"));
+    }
+    qDebug()<<"a";
+*/
     delete clock;
 }
 

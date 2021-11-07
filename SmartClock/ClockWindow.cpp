@@ -1,7 +1,6 @@
 #include <QMessageBox>
 #include "ClockWindow.h"
 #include "MainWindow.h"
-#include "Clock.h"
 #include "ui_ClockWindow.h"
 
 ClockWindow::ClockWindow(MainWindow *parent, bool newClock, size_t row) : QDialog(parent), ui(new Ui::ClockWindow)
@@ -31,7 +30,7 @@ void ClockWindow::on_buttonBox_accepted()
     }
     if(this->newClock)
     {
-        auto newClock = new Clock();
+        auto newClock = new MainWindow::Clock(parent);
 
         newClock->setTitle(ui->titleEdit->text());
         if(ui->radioButtonTimer->isChecked()) newClock->setType(0);
@@ -39,8 +38,8 @@ void ClockWindow::on_buttonBox_accepted()
         newClock->setValue(ui->timeEdit->time());
         newClock->setRepeating(ui->checkRepeating->isChecked());
 
-        parent->addNewClock(newClock);
         this->close();
+        parent->addNewClock(newClock);
     }
 }
 

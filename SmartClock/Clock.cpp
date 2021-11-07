@@ -1,10 +1,23 @@
 #include <QDateTime>
-#include "Clock.h"
+#include "MainWindow.h"
 #include "ui_MainWindow.h"
 
-Clock::Clock() = default;
-Clock::Clock(const Clock& clock)
+MainWindow::Clock::Clock(MainWindow *parent)
 {
+    this->parent = parent;
+
+    this->id = 0;
+    this->title = "";
+    this->type = -1;
+    this->status = -1;
+    this->value = QTime();
+    this->endTime = 0;
+    this->repeating = false;
+}
+MainWindow::Clock::Clock(MainWindow *parent, const Clock& clock)
+{
+    this->parent = parent;
+
     this->id = clock.getId();
     this->title = clock.getTitle();
     this->type = clock.getType();
@@ -13,7 +26,7 @@ Clock::Clock(const Clock& clock)
     this->endTime = clock.getEndTime();
     this->repeating = clock.getRepeating();
 }
-void Clock::set(const size_t& id, const QString& title, const short& type, const short& status,
+void MainWindow::Clock::set(const size_t& id, const QString& title, const short& type, const short& status,
                          const QTime& value, const qint64& endTime, const bool& repeating)
 {
     this->id = id;
@@ -24,88 +37,97 @@ void Clock::set(const size_t& id, const QString& title, const short& type, const
     this->endTime = endTime;
     this->repeating = repeating;
 }
-void Clock::setId(const size_t& id)
+void MainWindow::Clock::setId(const size_t& id)
 {
     this->id = id;
 }
-void Clock::setTitle(const QString& title)
+void MainWindow::Clock::setTitle(const QString& title)
 {
     this->title = title;
 }
-void Clock::setType(const short& type)
+void MainWindow::Clock::setType(const short& type)
 {
     this->type = type;
 }
-void Clock::setStatus(const short& status)
+void MainWindow::Clock::setStatus(const short& status)
 {
     this->status = status;
 }
-void Clock::setValue(const QTime& value)
+void MainWindow::Clock::setValue(const QTime& value)
 {
     this->value = value;
 }
-void Clock::setEndTime(const qint64& endTime)
+void MainWindow::Clock::setEndTime(const qint64& endTime)
 {
     this->endTime = endTime;
 }
-void Clock::setRepeating(const bool& repeating)
+void MainWindow::Clock::setRepeating(const bool& repeating)
 {
     this->repeating = repeating;
 }
-size_t Clock::getId() const
+size_t MainWindow::Clock::getId() const
 {
     return id;
 }
-QString Clock::getTitle() const
+QString MainWindow::Clock::getTitle() const
 {
     return title;
 }
-short Clock::getType() const
+short MainWindow::Clock::getType() const
 {
     return type;
 }
-short Clock::getStatus() const
+short MainWindow::Clock::getStatus() const
 {
     return status;
 }
-QTime Clock::getValue() const
+QTime MainWindow::Clock::getValue() const
 {
     return this->value;
 }
-qint64 Clock::getEndTime() const
+qint64 MainWindow::Clock::getEndTime() const
 {
     return endTime;
 }
-bool Clock::getRepeating() const
+bool MainWindow::Clock::getRepeating() const
 {
     return repeating;
 }
 
-
-void Clock::printToTable(const size_t& row) const
+void MainWindow::Clock::printToTable(const size_t& row) const
 {
+    //qDebug()<<&ui;
+    parent->ui->table->insertRow(row);
+    parent->ui->table->setItem(row,0,new QTableWidgetItem());
+    parent->ui->table->setItem(row,1,new QTableWidgetItem());
+    parent->ui->table->setItem(row,2,new QTableWidgetItem());
+    parent->ui->table->setItem(row,3,new QTableWidgetItem());
+    parent->ui->table->setItem(row,4,new QTableWidgetItem());
+    parent->ui->table->setItem(row,5,new QTableWidgetItem());
+    parent->ui->table->setItem(row,6,new QTableWidgetItem());
+    qDebug()<<parent->ui->table->rowCount();
     //"№" << "Title" << "Type" << "Status" << "Value" << "End time" << "Time left";
     //№
-    qDebug()<<row;
-    ui->table->item(row,0)->setText(QString::number(id+1));
+    parent->ui->table->item(row,0)->setText(QString::number(id+1));
     //Title
-    ui->table->item(row,1)->setText(title);
+    parent->ui->table->item(row,1)->setText(title);
     //Type
-    if(type==0) ui->table->item(row,2)->setText("Timer");
-    else if(type==1) ui->table->item(row,2)->setText("Alarm clock");
+    if(type==0) parent->ui->table->item(row,2)->setText("Timer");
+    else if(type==1) parent->ui->table->item(row,2)->setText("Alarm clock");
     //Status
-    if(status==1) ui->table->item(row,3)->setText("Active");
+    if(status==1) parent->ui->table->item(row,3)->setText("Active");
     //Value
-    ui->table->item(row,4)->setText(value.toString("hh::mm::ss"));
+    parent->ui->table->item(row,4)->setText(value.toString("hh::mm::ss"));
     //End time
     if(status==1)
     {
-        ui->table->item(row,5)->setText(value.toString("hh::mm::ss"));
+        parent->ui->table->item(row,5)->setText(value.toString("hh::mm::ss"));
     }
     //Time left
     if(status==1)
     {
         QTime timeLeft = QTime().addSecs(endTime - QDateTime::currentSecsSinceEpoch());
-        ui->table->item(row,6)->setText(timeLeft.toString("hh::mm::ss"));
+        parent->ui->table->item(row,6)->setText(timeLeft.toString("hh::mm::ss"));
     }
+    qDebug()<<parent->ui->table->item(row,4)->text();
 }
