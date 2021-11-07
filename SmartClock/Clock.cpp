@@ -96,38 +96,38 @@ bool MainWindow::Clock::getRepeating() const
 
 void MainWindow::Clock::printToTable(const size_t& row) const
 {
-    //qDebug()<<&ui;
-    parent->ui->table->insertRow(row);
-    parent->ui->table->setItem(row,0,new QTableWidgetItem());
-    parent->ui->table->setItem(row,1,new QTableWidgetItem());
-    parent->ui->table->setItem(row,2,new QTableWidgetItem());
-    parent->ui->table->setItem(row,3,new QTableWidgetItem());
-    parent->ui->table->setItem(row,4,new QTableWidgetItem());
-    parent->ui->table->setItem(row,5,new QTableWidgetItem());
-    parent->ui->table->setItem(row,6,new QTableWidgetItem());
-    qDebug()<<parent->ui->table->rowCount();
-    //"№" << "Title" << "Type" << "Status" << "Value" << "End time" << "Time left";
+    parent->ui->table->setSortingEnabled(false);
     //№
     parent->ui->table->item(row,0)->setText(QString::number(id+1));
     //Title
     parent->ui->table->item(row,1)->setText(title);
     //Type
-    if(type==0) parent->ui->table->item(row,2)->setText("Timer");
-    else if(type==1) parent->ui->table->item(row,2)->setText("Alarm clock");
+    if(type==0)
+    {
+        QIcon icon(":/prefix1/images/timer.png");
+        parent->ui->table->item(row,2)->setIcon(icon);
+        parent->ui->table->item(row,2)->setText("Timer");
+    }
+    else if(type==1)
+    {
+        QIcon icon(":/prefix1/images/alarm_clock.png");
+        parent->ui->table->item(row,2)->setIcon(icon);
+        parent->ui->table->item(row,2)->setText("Alarm clock");
+    }
     //Status
     if(status==1) parent->ui->table->item(row,3)->setText("Active");
     //Value
-    parent->ui->table->item(row,4)->setText(value.toString("hh::mm::ss"));
+    parent->ui->table->item(row,4)->setText(value.toString("hh : mm : ss"));
     //End time
     if(status==1)
     {
-        parent->ui->table->item(row,5)->setText(value.toString("hh::mm::ss"));
+        parent->ui->table->item(row,5)->setText(value.toString("hh : mm : ss"));
     }
     //Time left
     if(status==1)
     {
         QTime timeLeft = QTime().addSecs(endTime - QDateTime::currentSecsSinceEpoch());
-        parent->ui->table->item(row,6)->setText(timeLeft.toString("hh::mm::ss"));
-    }
-    qDebug()<<parent->ui->table->item(row,4)->text();
+        parent->ui->table->item(row,6)->setText(timeLeft.toString("hh : mm : ss"));
+    }   
+    parent->ui->table->setSortingEnabled(true);
 }
