@@ -25,6 +25,16 @@ ClockWindow::~ClockWindow()
 
 void ClockWindow::on_buttonBox_accepted()
 {
+    if(ui->nameEdit->text()=="")
+    {
+        QMessageBox msgBox(QMessageBox::Critical, "Error", "You must enter the clock name.");
+        msgBox.setStyleSheet("QMessageBox QPushButton{"
+                             "background-color: rgb(220, 240, 255);}"
+                             "QMessageBox{"
+                             "background-color: rgb(129, 190, 255);}");
+        msgBox.exec();
+        return;
+    }
     if(!ui->radioButtonTimer->isChecked() && !ui->radioButtonAlarmClock->isChecked())
     {
         QMessageBox msgBox(QMessageBox::Critical, "Error", "You must choose the clock type.");

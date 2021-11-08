@@ -57,6 +57,7 @@ private slots:
     void on_table_customContextMenuRequested(const QPoint &pos);
     void addNewClockWindow();
     void editClockWindow();
+    void removeClocks();
 private:
     Ui::MainWindow *ui;
     std::vector<Clock> clocks;

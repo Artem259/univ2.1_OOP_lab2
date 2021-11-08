@@ -10,7 +10,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     ui->toolBar->setCursor(Qt::PointingHandCursor);
 
     QStringList horizHeaders;
-    horizHeaders << "№" << "Title" << "Type" << "Status" << "Value" << "End time" << "Time left" << "Repeating";
+    horizHeaders << "№" << "Name" << "Type" << "Status" << "Value" << "End time" << "Time left" << "Repeating";
     ui->table->setColumnCount(horizHeaders.size());
     ui->table->setHorizontalHeaderLabels(horizHeaders);
     ui->table->horizontalHeader()->setDefaultAlignment(Qt::AlignLeft);
@@ -79,6 +79,63 @@ void MainWindow::editClock(Clock* clock)
     delete clock;
 }
 
+void MainWindow::removeClocks()
+{
+    size_t index;
+    QString string = "";
+    QModelIndexList selected = ui->table->selectionModel()->selectedRows();
+    for(size_t i = 0; i<selected.size(); i++)
+    {
+        index = (ui->table->item(selected[i].row(),0)->text()).toULongLong()-1;
+        if(clocks[index].getStatus()!=0)
+        {
+            string += clocks[index].getName()+"\n";
+        }
+    }
+    if(string!="")
+    {
+        QMessageBox::StandardButton msgBox;
+        msgBox = QMessageBox::question(this, "", "This action will remove the following active clocks:\n\n"+string+"\nAre you sure?", QMessageBox::Yes|QMessageBox::No);
+        setStyleSheet("QMessageBox QPushButton{"
+                             "background-color: rgb(220, 240, 255);}"
+                             "QMessageBox{"
+                             "background-color: rgb(129, 190, 255);}");
+        if(msgBox==QMessageBox::No)
+        {
+            return;
+        }
+    }
+
+
+    ui->table->setSortingEnabled(false);
+    std::vector<size_t> removed;
+    while(!selected.empty()) //removing rows from the table, recovering numeration in the table
+    {
+        index = (ui->table->item(selected[0].row(),0)->text()).toULongLong()-1;
+        auto pos = std::upper_bound(removed.begin(), removed.end(), index);
+        removed.insert(pos, index);
+        ui->table->removeRow(selected[0].row());
+        for(size_t i = 0; i<ui->table->rowCount(); i++)
+        {
+            if((ui->table->item(i,0)->text()).toULongLong() > index)
+            {
+                ui->table->item(i,0)->setText(QString::number((ui->table->item(i,0)->text()).toULongLong() - 1));
+            }
+        }
+        selected = ui->table->selectionModel()->selectedRows();
+    }
+    ui->table->setSortingEnabled(true);
+    for(size_t i = removed.size()-1; i<removed.size(); i--) //removing clocks from the vector
+    {
+        clocks.erase(clocks.begin()+removed[i]);
+    }
+    for(size_t i = clocks.size()-1; i<clocks.size(); i--) //recovering numeration in the vector
+    {
+        clocks[i].setId(i);
+    }
+    qDebug()<<removed[0];
+}
+
 MainWindow::~MainWindow()
 {
     delete ui;
@@ -123,6 +180,7 @@ void MainWindow::on_table_customContextMenuRequested(const QPoint &pos)
 
     if(add_new) connect(add_new, SIGNAL(triggered()), this, SLOT(addNewClockWindow()));
     if(edit) connect(edit, SIGNAL(triggered()), this, SLOT(editClockWindow()));
+    if(remove) connect(remove, SIGNAL(triggered()), this, SLOT(removeClocks()));
 
     menu->popup(ui->table->viewport()->mapToGlobal(pos));
 }
