@@ -16,7 +16,7 @@ class ClockWindow : public QDialog
     Q_OBJECT
 
 public:
-    explicit ClockWindow(MainWindow *parent, bool newClock, size_t row=0);
+    explicit ClockWindow(MainWindow *parent, MainWindow::Clock *clock=nullptr);
     ~ClockWindow();
     void setData(QString title, short radio, QTime time);
 
@@ -26,8 +26,7 @@ private slots:
 
 private:
     Ui::ClockWindow *ui;
-    bool newClock;
-    size_t row;
+    MainWindow::Clock *clock;
 protected:
     MainWindow *parent;
 };

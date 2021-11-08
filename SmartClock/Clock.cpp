@@ -7,7 +7,7 @@ MainWindow::Clock::Clock(MainWindow *parent)
     this->parent = parent;
 
     this->id = 0;
-    this->title = "";
+    this->name = "";
     this->type = -1;
     this->status = -1;
     this->value = QTime();
@@ -19,7 +19,7 @@ MainWindow::Clock::Clock(MainWindow *parent, const Clock& clock)
     this->parent = parent;
 
     this->id = clock.getId();
-    this->title = clock.getTitle();
+    this->name = clock.getName();
     this->type = clock.getType();
     this->status = clock.getStatus();
     this->value = clock.getValue();
@@ -30,7 +30,7 @@ void MainWindow::Clock::set(const size_t& id, const QString& title, const short&
                          const QTime& value, const qint64& endTime, const bool& repeating)
 {
     this->id = id;
-    this->title = title;
+    this->name = title;
     this->type = type;
     this->status = status;
     this->value = value;
@@ -41,9 +41,9 @@ void MainWindow::Clock::setId(const size_t& id)
 {
     this->id = id;
 }
-void MainWindow::Clock::setTitle(const QString& title)
+void MainWindow::Clock::setName(const QString& title)
 {
-    this->title = title;
+    this->name = title;
 }
 void MainWindow::Clock::setType(const short& type)
 {
@@ -69,9 +69,9 @@ size_t MainWindow::Clock::getId() const
 {
     return id;
 }
-QString MainWindow::Clock::getTitle() const
+QString MainWindow::Clock::getName() const
 {
-    return title;
+    return name;
 }
 short MainWindow::Clock::getType() const
 {
@@ -99,8 +99,8 @@ void MainWindow::Clock::printToTable(const size_t& row) const
     parent->ui->table->setSortingEnabled(false);
     //№
     parent->ui->table->item(row,0)->setText(QString::number(id+1));
-    //Title
-    parent->ui->table->item(row,1)->setText(title);
+    //Name
+    parent->ui->table->item(row,1)->setText(name);
     //Type
     if(type==0)
     {
@@ -128,6 +128,8 @@ void MainWindow::Clock::printToTable(const size_t& row) const
     {
         QTime timeLeft = QTime().addSecs(endTime - QDateTime::currentSecsSinceEpoch());
         parent->ui->table->item(row,6)->setText(timeLeft.toString("hh : mm : ss"));
-    }   
+    }
+    //Repeating
+    parent->ui->table->item(row,7)->setText(repeating ? "Yes" : "No");
     parent->ui->table->setSortingEnabled(true);
 }

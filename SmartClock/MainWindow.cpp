@@ -1,4 +1,5 @@
 #include <QHeaderView>
+#include <QMessageBox>
 #include "MainWindow.h"
 #include "ClockWindow.h"
 #include "./ui_MainWindow.h"
@@ -9,7 +10,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     ui->toolBar->setCursor(Qt::PointingHandCursor);
 
     QStringList horizHeaders;
-    horizHeaders << "№" << "Title" << "Type" << "Status" << "Value" << "End time" << "Time left";
+    horizHeaders << "№" << "Title" << "Type" << "Status" << "Value" << "End time" << "Time left" << "Repeating";
     ui->table->setColumnCount(horizHeaders.size());
     ui->table->setHorizontalHeaderLabels(horizHeaders);
     ui->table->horizontalHeader()->setDefaultAlignment(Qt::AlignLeft);
@@ -18,9 +19,29 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 
 void MainWindow::addNewClockWindow()
 {
-    auto clockWindow = new ClockWindow(this, true);
+    auto clockWindow = new ClockWindow(this);
     clockWindow->setModal(true);
     clockWindow->setWindowTitle("New Clock");
+    clockWindow->show();
+}
+
+void MainWindow::editClockWindow()
+{
+    QModelIndexList selected = ui->table->selectionModel()->selectedRows();
+    size_t index = (ui->table->item(selected[0].row(),0)->text()).toULongLong()-1;
+    if(clocks[index].getStatus()==1)
+    {
+        QMessageBox msgBox(QMessageBox::Critical, "Error", "You can't edit active clock.");
+        msgBox.setStyleSheet("QMessageBox QPushButton{"
+                             "background-color: rgb(220, 240, 255);}"
+                             "QMessageBox{"
+                             "background-color: rgb(129, 190, 255);}");
+        msgBox.exec();
+        return;
+    }
+    auto clockWindow = new ClockWindow(this, &clocks[index]);
+    clockWindow->setModal(true);
+    clockWindow->setWindowTitle("Edit Clock");
     clockWindow->show();
 }
 
@@ -39,7 +60,21 @@ void MainWindow::addNewClock(Clock *clock)
     ui->table->setItem(row,4,new QTableWidgetItem());
     ui->table->setItem(row,5,new QTableWidgetItem());
     ui->table->setItem(row,6,new QTableWidgetItem());
+    ui->table->setItem(row,7,new QTableWidgetItem());
     clock->printToTable(row);
+    ui->table->setSortingEnabled(true);
+    delete clock;
+}
+
+void MainWindow::editClock(Clock* clock)
+{
+    QModelIndexList selected = ui->table->selectionModel()->selectedRows();
+    size_t index = (ui->table->item(selected[0].row(),0)->text()).toULongLong()-1;
+    clock->setStatus(0);
+    clock->setId(index);
+    clocks[index] = *clock;
+    ui->table->setSortingEnabled(false);
+    clock->printToTable(selected[0].row());
     ui->table->setSortingEnabled(true);
     delete clock;
 }
@@ -87,6 +122,7 @@ void MainWindow::on_table_customContextMenuRequested(const QPoint &pos)
     }
 
     if(add_new) connect(add_new, SIGNAL(triggered()), this, SLOT(addNewClockWindow()));
+    if(edit) connect(edit, SIGNAL(triggered()), this, SLOT(editClockWindow()));
 
     menu->popup(ui->table->viewport()->mapToGlobal(pos));
 }

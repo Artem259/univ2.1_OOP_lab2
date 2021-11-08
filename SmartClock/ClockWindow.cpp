@@ -1,14 +1,21 @@
 #include <QMessageBox>
 #include "ClockWindow.h"
-#include "MainWindow.h"
-#include "ui_ClockWindow.h"
+#include "./ui_ClockWindow.h"
 
-ClockWindow::ClockWindow(MainWindow *parent, bool newClock, size_t row) : QDialog(parent), ui(new Ui::ClockWindow)
+ClockWindow::ClockWindow(MainWindow *parent, MainWindow::Clock *clock) : QDialog(parent), ui(new Ui::ClockWindow)
 {
     ui->setupUi(this);
     this->parent = parent;
-    this->newClock = newClock;
-    this->row = row;
+    this->clock = clock;
+
+    if(clock)
+    {
+        ui->nameEdit->setText(clock->getName());
+        if(clock->getType()==0) ui->radioButtonTimer->setChecked(true);
+        else if(clock->getType()==1) ui->radioButtonAlarmClock->setChecked(true);
+        ui->timeEdit->setTime(clock->getValue());
+        ui->checkRepeating->setChecked(clock->getRepeating());
+    }
 }
 
 ClockWindow::~ClockWindow()
@@ -28,19 +35,19 @@ void ClockWindow::on_buttonBox_accepted()
         msgBox.exec();
         return;
     }
-    if(this->newClock)
-    {
-        auto newClock = new MainWindow::Clock(parent);
 
-        newClock->setTitle(ui->titleEdit->text());
-        if(ui->radioButtonTimer->isChecked()) newClock->setType(0);
-        else if(ui->radioButtonAlarmClock->isChecked()) newClock->setType(1);
-        newClock->setValue(ui->timeEdit->time());
-        newClock->setRepeating(ui->checkRepeating->isChecked());
+    auto newClock = new MainWindow::Clock(parent);
 
-        this->close();
-        parent->addNewClock(newClock);
-    }
+    newClock->setName(ui->nameEdit->text());
+    if(ui->radioButtonTimer->isChecked()) newClock->setType(0);
+    else if(ui->radioButtonAlarmClock->isChecked()) newClock->setType(1);
+    newClock->setValue(ui->timeEdit->time());
+    newClock->setRepeating(ui->checkRepeating->isChecked());
+
+    if(!clock) parent->addNewClock(newClock); //adding new clock
+    else parent->editClock(newClock); //editing clock
+
+    this->close();
 }
 
 void ClockWindow::on_buttonBox_rejected()

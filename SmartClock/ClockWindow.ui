@@ -54,7 +54,7 @@
     </widget>
    </item>
    <item row="0" column="0" colspan="3">
-    <widget class="QLineEdit" name="titleEdit">
+    <widget class="QLineEdit" name="nameEdit">
      <property name="font">
       <font>
        <pointsize>16</pointsize>

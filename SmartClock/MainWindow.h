@@ -21,17 +21,17 @@ public:
     public:
         Clock(MainWindow *parent);
         Clock(MainWindow *parent, const Clock& clock);
-        void set(const size_t& id, const QString& title, const short& type, const short& status,
+        void set(const size_t& id, const QString& name, const short& type, const short& status,
                  const QTime& value, const qint64& endTime, const bool& repeating);
         void setId(const size_t& id);
-        void setTitle(const QString& title);
+        void setName(const QString& name);
         void setType(const short& type);
         void setStatus(const short& status);
         void setValue(const QTime& value);
         void setEndTime(const qint64& endTime);
         void setRepeating(const bool& repetitive);
         size_t getId() const;
-        QString getTitle() const;
+        QString getName() const;
         short getType() const;
         short getStatus() const;
         QTime getValue() const;
@@ -41,7 +41,7 @@ public:
         void printToTable(const size_t& row) const;
     private:
         size_t id;
-        QString title;
+        QString name;
         short type; //0->Timer, 1->Alarm clock
         short status; //0->off, 1->Active
         QTime value;
@@ -52,9 +52,11 @@ public:
     };
 
     void addNewClock(Clock* clock);
+    void editClock(Clock* clock);
 private slots:
     void on_table_customContextMenuRequested(const QPoint &pos);
     void addNewClockWindow();
+    void editClockWindow();
 private:
     Ui::MainWindow *ui;
     std::vector<Clock> clocks;
