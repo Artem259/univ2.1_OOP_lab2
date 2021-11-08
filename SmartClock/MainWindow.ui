@@ -17,7 +17,8 @@
    <bool>false</bool>
   </property>
   <property name="styleSheet">
-   <string notr="true">background-color: rgb(148, 203, 255);</string>
+   <string notr="true">background-color: rgb(148, 203, 255);
+</string>
   </property>
   <property name="iconSize">
    <size>

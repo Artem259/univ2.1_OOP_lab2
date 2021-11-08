@@ -29,9 +29,9 @@ void ClockWindow::on_buttonBox_accepted()
     {
         QMessageBox msgBox(QMessageBox::Critical, "Error", "You must enter the clock name.");
         msgBox.setStyleSheet("QMessageBox QPushButton{"
-                             "background-color: rgb(220, 240, 255);}"
+                                "background-color: rgb(220, 240, 255);}"
                              "QMessageBox{"
-                             "background-color: rgb(129, 190, 255);}");
+                                "background-color: rgb(129, 190, 255);}");
         msgBox.exec();
         return;
     }
@@ -39,9 +39,9 @@ void ClockWindow::on_buttonBox_accepted()
     {
         QMessageBox msgBox(QMessageBox::Critical, "Error", "You must choose the clock type.");
         msgBox.setStyleSheet("QMessageBox QPushButton{"
-                             "background-color: rgb(220, 240, 255);}"
+                                "background-color: rgb(220, 240, 255);}"
                              "QMessageBox{"
-                             "background-color: rgb(129, 190, 255);}");
+                                "background-color: rgb(129, 190, 255);}");
         msgBox.exec();
         return;
     }

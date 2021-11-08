@@ -96,7 +96,6 @@ bool MainWindow::Clock::getRepeating() const
 
 void MainWindow::Clock::printToTable(const size_t& row) const
 {
-    parent->ui->table->setSortingEnabled(false);
     //№
     parent->ui->table->item(row,0)->setText(QString::number(id+1));
     //Name
@@ -115,21 +114,25 @@ void MainWindow::Clock::printToTable(const size_t& row) const
         parent->ui->table->item(row,2)->setText("Alarm clock");
     }
     //Status
-    if(status==1) parent->ui->table->item(row,3)->setText("Active");
+    if(status==0) parent->ui->table->item(row,3)->setText("");
+    else if(status==1) parent->ui->table->item(row,3)->setText("Active");
     //Value
     parent->ui->table->item(row,4)->setText(value.toString("hh : mm : ss"));
     //End time
-    if(status==1)
+    if(status==0) parent->ui->table->item(row,5)->setText("");
+    else if(status==1)
     {
-        parent->ui->table->item(row,5)->setText(value.toString("hh : mm : ss"));
+        QDateTime endTimeValue;
+        endTimeValue.QDateTime::setSecsSinceEpoch(endTime);
+        parent->ui->table->item(row,5)->setText(endTimeValue.toString("hh : mm : ss"));
     }
     //Time left
-    if(status==1)
+    if(status==0) parent->ui->table->item(row,6)->setText("");
+    else if(status==1)
     {
-        QTime timeLeft = QTime().addSecs(endTime - QDateTime::currentSecsSinceEpoch());
+        QTime timeLeft = QTime(0,0,0).addSecs(endTime - QDateTime::currentSecsSinceEpoch());
         parent->ui->table->item(row,6)->setText(timeLeft.toString("hh : mm : ss"));
     }
     //Repeating
     parent->ui->table->item(row,7)->setText(repeating ? "Yes" : "No");
-    parent->ui->table->setSortingEnabled(true);
 }

@@ -54,13 +54,18 @@ public:
     void addNewClock(Clock* clock);
     void editClock(Clock* clock);
 private slots:
+    void counting();
+
     void on_table_customContextMenuRequested(const QPoint &pos);
     void addNewClockWindow();
     void editClockWindow();
     void removeClocks();
+    void startClocks();
+    void stopClocks();
 private:
     Ui::MainWindow *ui;
     std::vector<Clock> clocks;
+    Clock *closestClock;
 };
 
 #endif
