@@ -2,8 +2,13 @@
 /build-SmartClock-Desktop_Qt_6_1_3_MinGW_64_bit-Release/
 /build-SmartClock-Desktop_Qt_6_1_3_MinGW_64_bit-MinSizeRel/
 /.idea/
+/SmartClock/.idea/
 /SmartClock/cmake-build-debug/
 
 /SmartClock/CMakeLists.txt
 /SmartClock/CMakeLists.txt.user
 /SmartClock/MainWindow.ui.autosave
+/SmartClock/ClockWindow.ui.autosave
+/SmartClock/Signal.ui.autosave
+/SmartClock/SmartClock.pro
+/SmartClock/SmartClock.pro.user

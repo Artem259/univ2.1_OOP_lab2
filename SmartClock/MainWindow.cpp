@@ -3,16 +3,24 @@
 #include <QDateTime>
 #include <QTime>
 #include <QTimer>
+#include <QEvent>
 #include "MainWindow.h"
 #include "ClockWindow.h"
 #include "./ui_MainWindow.h"
 
+bool MainWindow::eventFilter(QObject *obj, QEvent *event)
+{
+    if (event->type() == QEvent::StatusTip) return true;
+    return false;
+}
+
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    qApp->installEventFilter(this);
     ui->toolBar->setCursor(Qt::PointingHandCursor);
 
-    closestClock = nullptr;
+    isClosestExists = false;
 
     QStringList horizHeaders;
     horizHeaders << "№" << "Name" << "Type" << "Status" << "Value" << "End time" << "Time left" << "Repeating";
@@ -23,7 +31,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 
     QTimer *timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(counting()));
-    timer->start(1000);
+
+    timer->start(500);
 }
 
 MainWindow::~MainWindow()
@@ -33,14 +42,13 @@ MainWindow::~MainWindow()
 
 void MainWindow::counting()
 {
-    this->setWindowTitle("SmartClock" + QTime::currentTime().toString(" [hh:mm:ss]"));
+    this->setWindowTitle("SmartClock     " + QTime::currentTime().toString("hh:mm:ss"));
     QTime timeLeft;
     size_t index, secLeft;
     ui->table->setSortingEnabled(false);
     for(size_t i = 0; i<clocks.size(); i++)
     {
-        qDebug()<< i;
-        index = (ui->table->item(i,0)->text()).toULongLong()-1;
+        index = (ui->table->item(i,0)->data(Qt::DisplayRole)).toULongLong()-1;
         if(clocks[index].getStatus()!=0)
         {
             secLeft = clocks[index].getEndTime() - QDateTime::currentSecsSinceEpoch();
@@ -49,24 +57,31 @@ void MainWindow::counting()
             if(secLeft<=0)
             {
                 //WINDOW
+
+                isClosestExists = false;
             }
-            if(!closestClock) closestClock = &clocks[index];
-            else if(clocks[index].getEndTime()<closestClock->getEndTime())
+            if(!isClosestExists)
             {
-                closestClock = &clocks[index];
+                indexOfClosest = index;
+                isClosestExists = true;
+            }
+            else if(clocks[index].getEndTime()<clocks[indexOfClosest].getEndTime())
+            {
+                indexOfClosest = index;
             }
         }
     }
     ui->table->setSortingEnabled(true);
-    if(closestClock)
+    if(isClosestExists)
     {
-        timeLeft = QTime(0,0,0).addSecs(closestClock->getEndTime() - QDateTime::currentSecsSinceEpoch());
-        ui->statusbar->showMessage(timeLeft.toString("hh : mm : ss - ")+closestClock->getName());
+        timeLeft = QTime(0,0,0).addSecs(clocks[indexOfClosest].getEndTime() - QDateTime::currentSecsSinceEpoch());
+        ui->statusbar->showMessage(timeLeft.toString("hh : mm : ss - ")+clocks[indexOfClosest].getName());
     }
     else
     {
         ui->statusbar->showMessage("No active clocks");
     }
+    qDebug()<<"left";
 }
 
 void MainWindow::addNewClockWindow()
@@ -80,7 +95,7 @@ void MainWindow::addNewClockWindow()
 void MainWindow::editClockWindow()
 {
     QModelIndexList selected = ui->table->selectionModel()->selectedRows();
-    size_t index = (ui->table->item(selected[0].row(),0)->text()).toULongLong()-1;
+    size_t index = (ui->table->item(selected[0].row(),0)->data(Qt::DisplayRole)).toULongLong()-1;
     if(clocks[index].getStatus()==1)
     {
         QMessageBox msgBox(QMessageBox::Critical, "Error", "You can't edit the active clock.");
@@ -117,12 +132,13 @@ void MainWindow::addNewClock(Clock *clock)
     clock->printToTable(row);
     ui->table->setSortingEnabled(true);
     delete clock;
+    qDebug()<<"Succesfull adding!!!";
 }
 
 void MainWindow::editClock(Clock* clock)
 {
     QModelIndexList selected = ui->table->selectionModel()->selectedRows();
-    size_t index = (ui->table->item(selected[0].row(),0)->text()).toULongLong()-1;
+    size_t index = (ui->table->item(selected[0].row(),0)->data(Qt::DisplayRole)).toULongLong()-1;
     clock->setStatus(0);
     clock->setId(index);
     clocks[index] = *clock;
@@ -134,15 +150,23 @@ void MainWindow::editClock(Clock* clock)
 
 void MainWindow::removeClocks()
 {
+    bool removingClosest = false;
     size_t index;
     QString string = "";
+    std::vector<size_t> removed;
     QModelIndexList selected = ui->table->selectionModel()->selectedRows();
     for(size_t i = 0; i<selected.size(); i++)
     {
-        index = (ui->table->item(selected[i].row(),0)->text()).toULongLong()-1;
+        index = (ui->table->item(selected[i].row(),0)->data(Qt::DisplayRole)).toULongLong()-1;
+        auto pos = std::upper_bound(removed.begin(), removed.end(), index);
+        removed.insert(pos, index);
         if(clocks[index].getStatus()!=0)
         {
             string += clocks[index].getName()+"\n";
+        }
+        if(index == indexOfClosest)
+        {
+            removingClosest = true;
         }
     }
     if(string!="")
@@ -159,25 +183,20 @@ void MainWindow::removeClocks()
         }
     }
 
-
+    if(removingClosest) isClosestExists = false;
+    size_t currIndex;
     ui->table->setSortingEnabled(false);
-    std::vector<size_t> removed;
     while(!selected.empty()) //removing rows from the table, recovering numeration in the table
     {
-        index = (ui->table->item(selected[0].row(),0)->text()).toULongLong()-1;
-        auto pos = std::upper_bound(removed.begin(), removed.end(), index);
-        removed.insert(pos, index);
+        index = (ui->table->item(selected[0].row(),0)->data(Qt::DisplayRole)).toULongLong()-1;
         ui->table->removeRow(selected[0].row());
         for(size_t i = 0; i<ui->table->rowCount(); i++)
         {
-            if((ui->table->item(i,0)->text()).toULongLong() > index)
+            currIndex = (ui->table->item(i,0)->data(Qt::DisplayRole)).toULongLong()-1;
+            if(currIndex > index)
             {
-                ui->table->item(i,0)->setText(QString::number((ui->table->item(i,0)->text()).toULongLong() - 1));
+                ui->table->item(i,0)->setData(Qt::DisplayRole, currIndex);
             }
-        }
-        if(&clocks[index] == closestClock)
-        {
-            closestClock = nullptr;
         }
         selected = ui->table->selectionModel()->selectedRows();
     }
@@ -198,7 +217,7 @@ void MainWindow::startClocks()
     QModelIndexList selected = ui->table->selectionModel()->selectedRows();
     for(size_t i = 0; i<selected.size(); i++)
     {
-        index = (ui->table->item(selected[i].row(),0)->text()).toULongLong()-1;
+        index = (ui->table->item(selected[i].row(),0)->data(Qt::DisplayRole)).toULongLong()-1;
         if(clocks[index].getStatus()!=0)
         {
             string += clocks[index].getName()+"\n";
@@ -216,7 +235,7 @@ void MainWindow::startClocks()
         {
              for(size_t i = 0; i<selected.size(); i++)
              {
-                  index = (ui->table->item(selected[i].row(),0)->text()).toULongLong()-1;
+                  index = (ui->table->item(selected[i].row(),0)->data(Qt::DisplayRole)).toULongLong()-1;
                   if(clocks[index].getStatus()!=0)
                   {
                       selected.erase(selected.cbegin()+i);
@@ -228,7 +247,7 @@ void MainWindow::startClocks()
     ui->table->setSortingEnabled(false);
     for(size_t i = 0; i<selected.size(); i++)
     {
-        index = (ui->table->item(selected[i].row(),0)->text()).toULongLong()-1;
+        index = (ui->table->item(selected[i].row(),0)->data(Qt::DisplayRole)).toULongLong()-1;
         clocks[index].setStatus(1);
         if(clocks[index].getType()==0) //timer
         {
@@ -245,7 +264,7 @@ void MainWindow::startClocks()
             }
             else
             {
-                qint64 secInDay = 24*3600;
+                const qint64 secInDay = 24*3600;
                 clocks[index].setEndTime(QDateTime::currentSecsSinceEpoch() - currentTimeToSec + valueToSec + secInDay);
             }
         }
@@ -260,13 +279,13 @@ void MainWindow::stopClocks()
     ui->table->setSortingEnabled(false);
     for(size_t i = 0; i<selected.size(); i++)
     {
-        index = (ui->table->item(selected[i].row(),0)->text()).toULongLong()-1;
+        index = (ui->table->item(selected[i].row(),0)->data(Qt::DisplayRole)).toULongLong()-1;
         clocks[index].setStatus(0);
         clocks[index].setEndTime(0);
         clocks[index].printToTable(selected[i].row());
-        if(&clocks[index] == closestClock)
+        if(index == indexOfClosest)
         {
-            closestClock = nullptr;
+            isClosestExists = false;
         }
     }
     ui->table->setSortingEnabled(true);
@@ -275,7 +294,8 @@ void MainWindow::stopClocks()
 void MainWindow::on_table_customContextMenuRequested(const QPoint &pos)
 {
     QMenu *menu = new QMenu(this);
-    menu->setStyleSheet("QMenu{background-color: rgb(204, 232, 255);}");
+    menu->setStyleSheet("QMenu{background-color: rgb(204, 232, 255);}"
+                        "QMenu Action:hover{background-color: red;}");
     QAction *add_new(nullptr), *start(nullptr), *stop(nullptr), *edit(nullptr), *remove(nullptr);
 
     QModelIndexList selected = ui->table->selectionModel()->selectedRows();

@@ -14,9 +14,9 @@ MainWindow::Clock::Clock(MainWindow *parent)
     this->endTime = 0;
     this->repeating = false;
 }
-MainWindow::Clock::Clock(MainWindow *parent, const Clock& clock)
+MainWindow::Clock::Clock(const Clock& clock)
 {
-    this->parent = parent;
+    this->parent = clock.getParent();
 
     this->id = clock.getId();
     this->name = clock.getName();
@@ -93,11 +93,15 @@ bool MainWindow::Clock::getRepeating() const
 {
     return repeating;
 }
+MainWindow* MainWindow::Clock::getParent() const
+{
+    return parent;
+}
 
 void MainWindow::Clock::printToTable(const size_t& row) const
 {
     //№
-    parent->ui->table->item(row,0)->setText(QString::number(id+1));
+    parent->ui->table->item(row,0)->setData(Qt::DisplayRole, id+1);
     //Name
     parent->ui->table->item(row,1)->setText(name);
     //Type

@@ -20,7 +20,7 @@ public:
     {
     public:
         Clock(MainWindow *parent);
-        Clock(MainWindow *parent, const Clock& clock);
+        Clock(const Clock& clock);
         void set(const size_t& id, const QString& name, const short& type, const short& status,
                  const QTime& value, const qint64& endTime, const bool& repeating);
         void setId(const size_t& id);
@@ -37,6 +37,7 @@ public:
         QTime getValue() const;
         qint64 getEndTime() const;
         bool getRepeating() const;
+        MainWindow* getParent() const;
 
         void printToTable(const size_t& row) const;
     private:
@@ -65,7 +66,10 @@ private slots:
 private:
     Ui::MainWindow *ui;
     std::vector<Clock> clocks;
-    Clock *closestClock;
+    size_t indexOfClosest;
+    bool isClosestExists;
+
+    bool eventFilter(QObject *obj, QEvent *ev);
 };
 
 #endif
