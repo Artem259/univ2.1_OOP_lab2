@@ -1,6 +1,6 @@
 #include <QMessageBox>
 #include "ClockWindow.h"
-#include "./ui_ClockWindow.h"
+#include "ui_ClockWindow.h"
 
 ClockWindow::ClockWindow(MainWindow *parent, MainWindow::Clock *clock) : QDialog(parent), ui(new Ui::ClockWindow)
 {

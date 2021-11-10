@@ -2,5 +2,7 @@
     <qresource prefix="/prefix1">
         <file>images/alarm_clock.png</file>
         <file>images/timer.png</file>
+        <file>images/signal.png</file>
+        <file>images/signal[small].png</file>
     </qresource>
 </RCC>

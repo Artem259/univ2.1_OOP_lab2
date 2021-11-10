@@ -5,10 +5,12 @@
 #include <QTime>
 #include "MainWindow.h"
 
+QT_BEGIN_NAMESPACE
 namespace Ui
 {
 class ClockWindow;
 }
+QT_END_NAMESPACE
 
 
 class ClockWindow : public QDialog

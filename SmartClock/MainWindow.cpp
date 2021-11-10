@@ -6,7 +6,8 @@
 #include <QEvent>
 #include "MainWindow.h"
 #include "ClockWindow.h"
-#include "./ui_MainWindow.h"
+#include "ui_MainWindow.h"
+//#include "Signal.h"
 
 bool MainWindow::eventFilter(QObject *obj, QEvent *event)
 {
@@ -81,7 +82,7 @@ void MainWindow::counting()
     {
         ui->statusbar->showMessage("No active clocks");
     }
-    qDebug()<<"left";
+    qDebug("left");
 }
 
 void MainWindow::addNewClockWindow()
@@ -132,7 +133,7 @@ void MainWindow::addNewClock(Clock *clock)
     clock->printToTable(row);
     ui->table->setSortingEnabled(true);
     delete clock;
-    qDebug()<<"Succesfull adding!!!";
+    qDebug("Succesfull adding!!!");
 }
 
 void MainWindow::editClock(Clock* clock)
@@ -238,7 +239,7 @@ void MainWindow::startClocks()
                   index = (ui->table->item(selected[i].row(),0)->data(Qt::DisplayRole)).toULongLong()-1;
                   if(clocks[index].getStatus()!=0)
                   {
-                      selected.erase(selected.cbegin()+i);
+                      selected.erase(selected.begin()+i);
                       i--;
                   }
              }
