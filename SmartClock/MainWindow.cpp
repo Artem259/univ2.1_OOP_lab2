@@ -23,6 +23,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     qApp->installEventFilter(this);
     ui->toolBar->setCursor(Qt::PointingHandCursor);
 
+    clocks = {};
     isClosestExists = false;
 
     QStringList horizHeaders;
@@ -34,11 +35,11 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 
     std::ifstream out;
 
-    size_t width;
-    int sortingCol;
     out.open("config.dat");
     if(out.is_open())
     {
+        size_t width;
+        int sortingCol;
         for(size_t i = 0; i<ui->table->horizontalHeader()->count(); i++) //read columns width
         {
             out >> width;
@@ -55,16 +56,24 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
         out.close();
     }
 
-    clocks = {};
     out.open("clocks.dat");
     if(out.is_open())
     {
-
+        Clock clock(this);
+        ui->table->setSortingEnabled(false);
+        while(out >> clock)
+        {
+            clocks.push_back(clock);
+            ui->table->insertRow(clock.getId());
+            for(size_t i = 0; i<ui->table->horizontalHeader()->count(); i++)
+            {
+                ui->table->setItem(clock.getId(), i, new QTableWidgetItem());
+            }
+            clock.printToTable(clock.getId());
+        }
+        ui->table->setSortingEnabled(true);
+        out.close();
     }
-
-
-
-
 
     QTimer *timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(counting()));
@@ -76,39 +85,36 @@ MainWindow::~MainWindow()
     std::ofstream in;
 
     in.open("config.dat", std::ios_base::trunc);
-    for(size_t i = 0; i<ui->table->horizontalHeader()->count(); i++) //write columns width
+    if(in.is_open())
     {
-        in << ui->table->horizontalHeader()->sectionSize(i) << " ";
+        for(size_t i = 0; i<ui->table->horizontalHeader()->count(); i++) //write columns width
+        {
+            in << ui->table->horizontalHeader()->sectionSize(i) << " ";
+        }
+        if(ui->table->horizontalHeader()->sortIndicatorSection() != ui->table->horizontalHeader()->count()) //is sorted?
+        {
+            in << ui->table->horizontalHeader()->sortIndicatorSection() << " "; //write the sorting column number
+            in << ui->table->horizontalHeader()->sortIndicatorOrder(); //write the sorting order
+        }
+        else in << -1;
+        in.close();
     }
-    if(ui->table->horizontalHeader()->sortIndicatorSection() != ui->table->horizontalHeader()->count()) //is sorted?
-    {
-        in << ui->table->horizontalHeader()->sortIndicatorSection() << " "; //write the sorting column number
-        in << ui->table->horizontalHeader()->sortIndicatorOrder(); //write the sorting order
-    }
-    else in << -1;
-    in.close();
 
     in.open("clocks.dat", std::ios_base::trunc);
-    for(size_t i = 0; i<clocks.size(); i++) //write clocks data
+    if(in.is_open())
     {
-        in << clocks[i].getName().toStdString().length() << " "; //Length of the Name
-        in << clocks[i].getName().toStdString() << " "; //Name
-        in << clocks[i].getType() << " "; //Type
-        in << clocks[i].getStatus() << " "; //Status
-        in << clocks[i].getValue().hour() << " "; //Value.hour
-        in << clocks[i].getValue().minute() << " "; //Value.minute
-        in << clocks[i].getValue().second() << " "; //Value.second
-        in << clocks[i].getEndTime() << " "; //End time
-        in << clocks[i].getRepeating() << " "; //Repeating
+        for(size_t i = 0; i<clocks.size(); i++) //write clocks data
+        {
+            in << clocks[i];
+            if(i != clocks.size()-1) in << "\n";
+        }
+        in.close();
     }
-    in.close();
-
     delete ui;
 }
 
 void MainWindow::counting()
 {
-    auto a = ui->table->horizontalHeader()->sortIndicatorSection();
     this->setWindowTitle("SmartClock     " + QTime::currentTime().toString("hh:mm:ss"));
     QTime timeLeft;
     size_t index, secLeft;
@@ -187,14 +193,10 @@ void MainWindow::addNewClock(Clock *clock)
     size_t row = ui->table->rowCount();
     ui->table->setSortingEnabled(false);
     ui->table->insertRow(row);
-    ui->table->setItem(row,0,new QTableWidgetItem());
-    ui->table->setItem(row,1,new QTableWidgetItem());
-    ui->table->setItem(row,2,new QTableWidgetItem());
-    ui->table->setItem(row,3,new QTableWidgetItem());
-    ui->table->setItem(row,4,new QTableWidgetItem());
-    ui->table->setItem(row,5,new QTableWidgetItem());
-    ui->table->setItem(row,6,new QTableWidgetItem());
-    ui->table->setItem(row,7,new QTableWidgetItem());
+    for(size_t i = 0; i<ui->table->horizontalHeader()->count(); i++)
+    {
+        ui->table->setItem(row, i, new QTableWidgetItem());
+    }
     clock->printToTable(row);
     ui->table->setSortingEnabled(true);
     delete clock;

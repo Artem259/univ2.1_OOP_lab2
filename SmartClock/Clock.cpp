@@ -1,6 +1,9 @@
 #include <QDateTime>
+#include <iostream>
 #include "MainWindow.h"
 #include "ui_MainWindow.h"
+
+#include <QDebug>
 
 MainWindow::Clock::Clock(MainWindow *parent)
 {
@@ -139,4 +142,64 @@ void MainWindow::Clock::printToTable(const size_t& row) const
     }
     //Repeating
     parent->ui->table->item(row,7)->setText(repeating ? "Yes" : "No");
+}
+std::ostream& operator <<(std::ostream &in, const MainWindow::Clock &clock)
+{
+    in << clock.getId() << " "; //Id
+    in << clock.getName().toStdString().size() << " "; //size of the Name
+    in << clock.getName().toStdString() << " "; //Name
+    in << clock.getType() << " "; //Type
+    in << clock.getStatus() << " "; //Status
+    in << clock.getValue().hour() << " "; //Value.hour
+    in << clock.getValue().minute() << " "; //Value.minute
+    in << clock.getValue().second() << " "; //Value.second
+    in << clock.getEndTime() << " "; //End time
+    in << clock.getRepeating(); //Repeating
+    return in;
+}
+std::istream& operator >>(std::istream &out, MainWindow::Clock &clock)
+{
+    char c;
+    char *name;
+    size_t data;
+    qint64 endTime;
+
+    std::ios_base::fmtflags flags(out.flags());
+    out >> std::skipws;
+
+    out >> data; //read Id
+    clock.setId(data); //set Id
+
+    out >> data; //read size of the Name
+    out.get(); //skip space
+    name = new char[data+1]();
+    out >> std::noskipws;
+    for(size_t i = 0; i<data; i++)
+    {
+        out >> c;
+        name[i] = c;
+    }
+    out >> std::skipws;
+    clock.setName(name);
+    delete []name;
+
+    out >> data; //read Type
+    clock.setType(data); //set Type
+    out >> data; //read Status
+    clock.setStatus(data); //set Status
+
+    out >> data; //read Value.hour
+    clock.setValue(QTime(0,0,0).addSecs(data*3600)); //set Value.hour
+    out >> data; //read Value.minute
+    clock.setValue(clock.getValue().addSecs(data*60)); //set Value.minute
+    out >> data; //read Value.second
+    clock.setValue(clock.getValue().addSecs(data)); //set Value.second
+
+    out >> endTime; //read EndTime
+    clock.setEndTime(endTime); //set EndTime
+    out >> data; //read Repeating
+    clock.setRepeating(data); //set Repeating
+
+    out.flags(flags);
+    return out;
 }
