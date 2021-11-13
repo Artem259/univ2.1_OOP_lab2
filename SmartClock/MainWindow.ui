@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>863</width>
-    <height>465</height>
+    <width>963</width>
+    <height>500</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -139,7 +139,7 @@ QTableView
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>863</width>
+     <width>963</width>
      <height>21</height>
     </rect>
    </property>
@@ -186,15 +186,36 @@ border: none;</string>
    <property name="toolButtonStyle">
     <enum>Qt::ToolButtonIconOnly</enum>
    </property>
+   <property name="floatable">
+    <bool>false</bool>
+   </property>
    <attribute name="toolBarArea">
     <enum>TopToolBarArea</enum>
    </attribute>
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
+   <addaction name="addNewTool"/>
    <addaction name="separator"/>
   </widget>
+  <action name="addNewTool">
+   <property name="icon">
+    <iconset resource="Resource.qrc">
+     <normaloff>:/prefix1/images/add_clock.png</normaloff>:/prefix1/images/add_clock.png</iconset>
+   </property>
+   <property name="text">
+    <string>Add new</string>
+   </property>
+   <property name="toolTip">
+    <string>Add new</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+=, Ctrl++</string>
+   </property>
+  </action>
  </widget>
- <resources/>
+ <resources>
+  <include location="Resource.qrc"/>
+ </resources>
  <connections/>
 </ui>

@@ -62,17 +62,21 @@ public:
 private slots:
     void counting();
 
+    void updateTable();
     void on_table_customContextMenuRequested(const QPoint &pos);
     void addNewClockWindow();
     void editClockWindow();
     void removeClocks();
     void startClocks();
     void stopClocks();
+    void on_addNewTool_triggered();
+
 private:
     Ui::MainWindow *ui;
     std::vector<Clock> clocks;
     size_t indexOfClosest;
     bool isClosestExists;
+    size_t currentIndex;
 
     bool eventFilter(QObject *obj, QEvent *ev);
 };

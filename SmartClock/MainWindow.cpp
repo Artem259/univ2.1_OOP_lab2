@@ -7,6 +7,7 @@
 #include <fstream>
 #include "MainWindow.h"
 #include "ClockWindow.h"
+#include "SignalWindow.h"
 #include "ui_MainWindow.h"
 #include <QDebug>
 
@@ -25,6 +26,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 
     clocks = {};
     isClosestExists = false;
+    currentIndex = 0;
 
     QStringList horizHeaders;
     horizHeaders << "№" << "Name" << "Type" << "Status" << "Value" << "End time" << "Time left" << "Repeating";
@@ -57,21 +59,43 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     }
 
     out.open("clocks.dat");
+
     if(out.is_open())
     {
         Clock clock(this);
-        ui->table->setSortingEnabled(false);
+        QString string = "";
+        std::vector <size_t> finished;
+        qint64 currTime = QDateTime::currentSecsSinceEpoch();
         while(out >> clock)
         {
             clocks.push_back(clock);
-            ui->table->insertRow(clock.getId());
-            for(size_t i = 0; i<ui->table->horizontalHeader()->count(); i++)
+            if(clock.getStatus()!=0 && clock.getEndTime()<currTime)
             {
-                ui->table->setItem(clock.getId(), i, new QTableWidgetItem());
+                finished.push_back(clock.getId());
+                string += clock.getName()+"\n";
             }
-            clock.printToTable(clock.getId());
         }
-        ui->table->setSortingEnabled(true);
+        updateTable();
+        if(string!="")
+        {
+            stopClocks(finished);
+            QMessageBox msgBox(QMessageBox::Information, "", "While the program was offline, the following clocks finished:\n\n"+string);
+            msgBox.setStyleSheet("QMessageBox QPushButton{"
+                                    "background-color: rgb(220, 240, 255);}"
+                                 "QMessageBox{"
+                                    "background-color: rgb(129, 190, 255);}");
+            msgBox.exec();
+            for(size_t i = 0; i<finished.size(); i++)
+            {
+                if(!clocks[finished[i]].getRepeating())
+                {
+                    finished.erase(finished.begin()+i);
+                    i--;
+                }
+            }
+            startClocks(finished);
+            updateTable();
+        }
         out.close();
     }
 
@@ -156,6 +180,23 @@ void MainWindow::counting()
     }
 }
 
+void MainWindow::updateTable()
+{
+    ui->table->clearContents();
+    bool sorting = ui->table->isSortingEnabled();
+    ui->table->setSortingEnabled(false);
+    for(size_t i = 0; i<clocks.size(); i++)
+    {
+        ui->table->insertRow(i);
+        for(size_t k = 0; k<ui->table->horizontalHeader()->count(); k++)
+        {
+            ui->table->setItem(i, k, new QTableWidgetItem());
+        }
+        clocks[i].printToTable(i);
+    }
+    ui->table->setSortingEnabled(sorting);
+}
+
 void MainWindow::addNewClockWindow()
 {
     auto clockWindow = new ClockWindow(this);
@@ -164,10 +205,9 @@ void MainWindow::addNewClockWindow()
     clockWindow->show();
 }
 
-void MainWindow::editClockWindow()
+void MainWindow::editClockWindow(const size_t& index)
 {
-    QModelIndexList selected = ui->table->selectionModel()->selectedRows();
-    size_t index = (ui->table->item(selected[0].row(),0)->data(Qt::DisplayRole)).toULongLong()-1;
+    currentIndex = index;
     if(clocks[index].getStatus()==1)
     {
         QMessageBox msgBox(QMessageBox::Critical, "Error", "You can't edit the active clock.");
@@ -190,48 +230,30 @@ void MainWindow::addNewClock(Clock *clock)
     clock->setId(this->clocks.size());
     clock->setEndTime(0);
     this->clocks.push_back(*clock);
-    size_t row = ui->table->rowCount();
-    ui->table->setSortingEnabled(false);
-    ui->table->insertRow(row);
-    for(size_t i = 0; i<ui->table->horizontalHeader()->count(); i++)
-    {
-        ui->table->setItem(row, i, new QTableWidgetItem());
-    }
-    clock->printToTable(row);
-    ui->table->setSortingEnabled(true);
     delete clock;
+    updateTable();
 }
 
 void MainWindow::editClock(Clock* clock)
 {
-    QModelIndexList selected = ui->table->selectionModel()->selectedRows();
-    size_t index = (ui->table->item(selected[0].row(),0)->data(Qt::DisplayRole)).toULongLong()-1;
     clock->setStatus(0);
-    clock->setId(index);
-    clocks[index] = *clock;
-    ui->table->setSortingEnabled(false);
-    clock->printToTable(selected[0].row());
-    ui->table->setSortingEnabled(true);
+    clock->setId(currentIndex);
+    clocks[currentIndex] = *clock;
     delete clock;
+    updateTable();
 }
 
-void MainWindow::removeClocks()
+void MainWindow::removeClocks(const std::vector<size_t>& indices)
 {
     bool removingClosest = false;
-    size_t index;
     QString string = "";
-    std::vector<size_t> removed;
-    QModelIndexList selected = ui->table->selectionModel()->selectedRows();
-    for(size_t i = 0; i<selected.size(); i++)
+    for(size_t i = 0; i<indices.size(); i++)
     {
-        index = (ui->table->item(selected[i].row(),0)->data(Qt::DisplayRole)).toULongLong()-1;
-        auto pos = std::upper_bound(removed.begin(), removed.end(), index);
-        removed.insert(pos, index);
-        if(clocks[index].getStatus()!=0)
+        if(clocks[indices[i]].getStatus()!=0)
         {
-            string += clocks[index].getName()+"\n";
+            string += clocks[indices[i]].getName()+"\n";
         }
-        if(index == indexOfClosest)
+        if(indices[i] == indexOfClosest)
         {
             removingClosest = true;
         }
@@ -251,43 +273,26 @@ void MainWindow::removeClocks()
     }
 
     if(removingClosest) isClosestExists = false;
-    size_t currIndex;
-    ui->table->setSortingEnabled(false);
-    while(!selected.empty()) //removing rows from the table, recovering numeration in the table
+    for(size_t i = indices.size()-1; i<indices.size(); i--) //removing clocks from the vector
     {
-        index = (ui->table->item(selected[0].row(),0)->data(Qt::DisplayRole)).toULongLong()-1;
-        ui->table->removeRow(selected[0].row());
-        for(size_t i = 0; i<ui->table->rowCount(); i++)
-        {
-            currIndex = (ui->table->item(i,0)->data(Qt::DisplayRole)).toULongLong()-1;
-            if(currIndex > index)
-            {
-                ui->table->item(i,0)->setData(Qt::DisplayRole, currIndex);
-            }
-        }
-        selected = ui->table->selectionModel()->selectedRows();
-    }
-    ui->table->setSortingEnabled(true);
-    for(size_t i = removed.size()-1; i<removed.size(); i--) //removing clocks from the vector
-    {
-        clocks.erase(clocks.begin()+removed[i]);
+        clocks.erase(clocks.begin()+indices[i]);
     }
     for(size_t i = clocks.size()-1; i<clocks.size(); i--) //recovering numeration in the vector
     {
         clocks[i].setId(i);
     }
+    updateTable();
 }
-void MainWindow::startClocks()
+
+void MainWindow::startClocks(const std::vector<size_t>& indices)
 {
-    size_t index;
+    std::vector<size_t> copy = indices;
     QString string = "";
-    QModelIndexList selected = ui->table->selectionModel()->selectedRows();
-    for(size_t i = 0; i<selected.size(); i++)
+    for(size_t i = 0; i<copy.size(); i++)
     {
-        index = (ui->table->item(selected[i].row(),0)->data(Qt::DisplayRole)).toULongLong()-1;
-        if(clocks[index].getStatus()!=0)
+        if(clocks[copy[i]].getStatus()!=0)
         {
-            string += clocks[index].getName()+"\n";
+            string += clocks[copy[i]].getName()+"\n";
         }
     }
     if(string!="")
@@ -300,62 +305,54 @@ void MainWindow::startClocks()
         auto button = msgBox.exec();
         if(button==QMessageBox::No)
         {
-             for(size_t i = 0; i<selected.size(); i++)
+             for(size_t i = 0; i<copy.size(); i++)
              {
-                  index = (ui->table->item(selected[i].row(),0)->data(Qt::DisplayRole)).toULongLong()-1;
-                  if(clocks[index].getStatus()!=0)
+                  if(clocks[copy[i]].getStatus()!=0)
                   {
-                      selected.erase(selected.begin()+i);
+                      copy.erase(copy.begin()+i);
                       i--;
                   }
              }
         }
     }
-    ui->table->setSortingEnabled(false);
-    for(size_t i = 0; i<selected.size(); i++)
+    for(size_t i = 0; i<copy.size(); i++)
     {
-        index = (ui->table->item(selected[i].row(),0)->data(Qt::DisplayRole)).toULongLong()-1;
-        clocks[index].setStatus(1);
-        if(clocks[index].getType()==0) //timer
+        clocks[copy[i]].setStatus(1);
+        if(clocks[copy[i]].getType()==0) //timer
         {
-            qint64 valueToSec = clocks[index].getValue().hour()*3600 + clocks[index].getValue().minute()*60 + clocks[index].getValue().second();
-            clocks[index].setEndTime(QDateTime::currentSecsSinceEpoch() + valueToSec);
+            qint64 valueToSec = clocks[copy[i]].getValue().hour()*3600 + clocks[copy[i]].getValue().minute()*60 + clocks[copy[i]].getValue().second();
+            clocks[copy[i]].setEndTime(QDateTime::currentSecsSinceEpoch() + valueToSec);
         }
-        else if(clocks[index].getType()==1) //alarm clock
+        else if(clocks[copy[i]].getType()==1) //alarm clock
         {
-            qint64 valueToSec = clocks[index].getValue().hour()*3600 + clocks[index].getValue().minute()*60 + clocks[index].getValue().second();
+            qint64 valueToSec = clocks[copy[i]].getValue().hour()*3600 + clocks[copy[i]].getValue().minute()*60 + clocks[copy[i]].getValue().second();
             qint64 currentTimeToSec = QTime::currentTime().hour()*3600 + QTime::currentTime().minute()*60 + QTime::currentTime().second();
-            if(QTime::currentTime()<=clocks[index].getValue())
+            if(QTime::currentTime()<=clocks[copy[i]].getValue())
             {
-                clocks[index].setEndTime(QDateTime::currentSecsSinceEpoch() - currentTimeToSec + valueToSec);
+                clocks[copy[i]].setEndTime(QDateTime::currentSecsSinceEpoch() - currentTimeToSec + valueToSec);
             }
             else
             {
                 const qint64 secInDay = 24*3600;
-                clocks[index].setEndTime(QDateTime::currentSecsSinceEpoch() - currentTimeToSec + valueToSec + secInDay);
+                clocks[copy[i]].setEndTime(QDateTime::currentSecsSinceEpoch() - currentTimeToSec + valueToSec + secInDay);
             }
         }
-        clocks[index].printToTable(selected[i].row());
     }
-    ui->table->setSortingEnabled(true);
+    updateTable();
 }
-void MainWindow::stopClocks()
+
+void MainWindow::stopClocks(const std::vector<size_t>& indices)
 {
-    size_t index;
-    QModelIndexList selected = ui->table->selectionModel()->selectedRows();
-    ui->table->setSortingEnabled(false);
-    for(size_t i = 0; i<selected.size(); i++)
+    for(size_t i = 0; i<indices.size(); i++)
     {
-        index = (ui->table->item(selected[i].row(),0)->data(Qt::DisplayRole)).toULongLong()-1;
-        clocks[index].setStatus(0);
-        clocks[index].setEndTime(0);
-        clocks[index].printToTable(selected[i].row());
-        if(index == indexOfClosest)
+        clocks[indices[i]].setStatus(0);
+        clocks[indices[i]].setEndTime(0);
+        if(indices[i] == indexOfClosest)
         {
             isClosestExists = false;
         }
     }
-    ui->table->setSortingEnabled(true);
+    updateTable();
 }
 
 void MainWindow::on_table_customContextMenuRequested(const QPoint &pos)
@@ -395,11 +392,30 @@ void MainWindow::on_table_customContextMenuRequested(const QPoint &pos)
         menu->addAction(remove);
     }
 
+    std::vector<size_t> indices;
+    if(remove || start || stop || edit)
+    {
+        std::vector<size_t> indices;
+        size_t index;
+        for(size_t i = 0; i<selected.size(); i++)
+        {
+            index = (ui->table->item(selected[i].row(),0)->data(Qt::DisplayRole)).toULongLong()-1;
+            indices.push_back(index);
+        }
+        std::sort(indices.begin(), indices.end());
+    }
+
     if(add_new) connect(add_new, SIGNAL(triggered()), this, SLOT(addNewClockWindow()));
-    if(edit) connect(edit, SIGNAL(triggered()), this, SLOT(editClockWindow()));
-    if(remove) connect(remove, SIGNAL(triggered()), this, SLOT(removeClocks()));
-    if(start) connect(start, SIGNAL(triggered()), this, SLOT(startClocks()));
-    if(stop) connect(stop, SIGNAL(triggered()), this, SLOT(stopClocks()));
+    if(edit) connect(edit, SIGNAL(triggered()), this, SLOT(editClockWindow(indices[0])));
+    if(remove) connect(remove, SIGNAL(triggered()), this, SLOT(removeClocks(indices)));
+    if(start) connect(start, SIGNAL(triggered()), this, SLOT(startClocks(indices)));
+    if(stop) connect(stop, SIGNAL(triggered()), this, SLOT(stopClocks(indices)));
 
     menu->popup(ui->table->viewport()->mapToGlobal(pos));
 }
+
+void MainWindow::on_addNewTool_triggered()
+{
+    addNewClockWindow();
+}
+

@@ -4,5 +4,6 @@
         <file>images/timer.png</file>
         <file>images/signal.png</file>
         <file>images/signal[small].png</file>
+        <file>images/add_clock.png</file>
     </qresource>
 </RCC>

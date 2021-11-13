@@ -103,6 +103,8 @@ MainWindow* MainWindow::Clock::getParent() const
 
 void MainWindow::Clock::printToTable(const size_t& row) const
 {
+    bool sorting = parent->ui->table->isSortingEnabled();
+    parent->ui->table->setSortingEnabled(false);
     //№
     parent->ui->table->item(row,0)->setData(Qt::DisplayRole, id+1);
     //Name
@@ -142,6 +144,7 @@ void MainWindow::Clock::printToTable(const size_t& row) const
     }
     //Repeating
     parent->ui->table->item(row,7)->setText(repeating ? "Yes" : "No");
+    parent->ui->table->setSortingEnabled(sorting);
 }
 std::ostream& operator <<(std::ostream &in, const MainWindow::Clock &clock)
 {
