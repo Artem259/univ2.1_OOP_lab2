@@ -45,6 +45,7 @@ public:
         MainWindow* getParent() const;
 
         void printToTable(const size_t& row) const;
+        void delayBySec(const qint64& seconds);
     private:
         size_t id;
         QString name;
@@ -57,19 +58,25 @@ public:
         MainWindow *parent;
     };
 
+    std::vector<size_t> getSelected() const;
     void addNewClock(Clock* clock);
     void editClock(Clock* clock);
-private slots:
-    void counting();
+    void removeClocks(const std::vector<size_t>& indices);
+    void startClocks(const std::vector<size_t>& indices);
+    void stopClocks(const std::vector<size_t>& indices);
 
     void updateTable();
+private slots:    
+    void addNewClockWindow_slot();
+    void editClockWindow_slot();
+    void removeClocks_slot();
+    void startClocks_slot();
+    void stopClocks_slot();
+
+    void counting();
     void on_table_customContextMenuRequested(const QPoint &pos);
-    void addNewClockWindow();
-    void editClockWindow();
-    void removeClocks();
-    void startClocks();
-    void stopClocks();
     void on_addNewTool_triggered();
+    void on_table_cellDoubleClicked(int row, int column);
 
 private:
     Ui::MainWindow *ui;
@@ -79,6 +86,11 @@ private:
     size_t currentIndex;
 
     bool eventFilter(QObject *obj, QEvent *ev);
+    void addNewClockWindow();
+    void editClockWindow(const size_t& index);
 };
+
+std::ostream& operator <<(std::ostream &in, const MainWindow::Clock &clock);
+std::istream& operator >>(std::istream &out, MainWindow::Clock &clock);
 
 #endif

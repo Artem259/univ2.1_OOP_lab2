@@ -33,7 +33,4 @@ protected:
     MainWindow *parent;
 };
 
-std::ostream& operator <<(std::ostream &in, const MainWindow::Clock &clock);
-std::istream& operator >>(std::istream &out, MainWindow::Clock &clock);
-
 #endif

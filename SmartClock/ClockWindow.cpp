@@ -2,6 +2,8 @@
 #include "ClockWindow.h"
 #include "ui_ClockWindow.h"
 
+#include <QDebug>
+
 ClockWindow::ClockWindow(MainWindow *parent, MainWindow::Clock *clock) : QDialog(parent), ui(new Ui::ClockWindow)
 {
     ui->setupUi(this);

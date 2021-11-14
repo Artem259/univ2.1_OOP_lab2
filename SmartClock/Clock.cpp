@@ -125,11 +125,12 @@ void MainWindow::Clock::printToTable(const size_t& row) const
     //Status
     if(status==0) parent->ui->table->item(row,3)->setText("");
     else if(status==1) parent->ui->table->item(row,3)->setText("Active");
+    else if(status==2) parent->ui->table->item(row,3)->setText("Delayed");
     //Value
     parent->ui->table->item(row,4)->setText(value.toString("hh : mm : ss"));
     //End time
     if(status==0) parent->ui->table->item(row,5)->setText("");
-    else if(status==1)
+    else if(status==1 || status==2)
     {
         QDateTime endTimeValue;
         endTimeValue.QDateTime::setSecsSinceEpoch(endTime);
@@ -137,7 +138,7 @@ void MainWindow::Clock::printToTable(const size_t& row) const
     }
     //Time left
     if(status==0) parent->ui->table->item(row,6)->setText("");
-    else if(status==1)
+    else if(status==1 || status==2)
     {
         QTime timeLeft = QTime(0,0,0).addSecs(endTime - QDateTime::currentSecsSinceEpoch());
         parent->ui->table->item(row,6)->setText(timeLeft.toString("hh : mm : ss"));
@@ -146,6 +147,13 @@ void MainWindow::Clock::printToTable(const size_t& row) const
     parent->ui->table->item(row,7)->setText(repeating ? "Yes" : "No");
     parent->ui->table->setSortingEnabled(sorting);
 }
+
+void MainWindow::Clock::delayBySec(const qint64& seconds)
+{
+    status = 2;
+    endTime = QDateTime::currentSecsSinceEpoch() + seconds;
+}
+
 std::ostream& operator <<(std::ostream &in, const MainWindow::Clock &clock)
 {
     in << clock.getId() << " "; //Id
@@ -160,6 +168,7 @@ std::ostream& operator <<(std::ostream &in, const MainWindow::Clock &clock)
     in << clock.getRepeating(); //Repeating
     return in;
 }
+
 std::istream& operator >>(std::istream &out, MainWindow::Clock &clock)
 {
     char c;
