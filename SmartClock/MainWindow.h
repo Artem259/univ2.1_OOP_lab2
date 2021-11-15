@@ -59,11 +59,11 @@ public:
     };
 
     std::vector<size_t> getSelected() const;
-    void addNewClock(Clock* clock);
-    void editClock(Clock* clock);
-    void removeClocks(const std::vector<size_t>& indices);
-    void startClocks(const std::vector<size_t>& indices);
-    void stopClocks(const std::vector<size_t>& indices);
+    void addNewClock(Clock* clock, const bool& updateTable);
+    void editClock(Clock* clock, const bool& updateTable);
+    void removeClocks(const std::vector<size_t>& indices, const bool& updateTable);
+    void startClocks(const std::vector<size_t>& indices, const bool& updateTable);
+    void stopClocks(const std::vector<size_t>& indices, const bool& updateTable);
 
     void updateTable();
 private slots:    

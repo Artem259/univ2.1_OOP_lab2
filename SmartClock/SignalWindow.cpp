@@ -5,9 +5,15 @@
 
 SignalWindow::SignalWindow(MainWindow *parent, MainWindow::Clock *clock) : QDialog(parent), ui(new Ui::SignalWindow)
 {
+    setAttribute(Qt::WA_DeleteOnClose);
     ui->setupUi(this);
     this->parent = parent;
     this->clock = clock;
+    if(clock->getType()==0) this->signal = new QSound(":/prefix1/sounds/timer_sound.wav", this);
+    else if(clock->getType()==1) this->signal = new QSound(":/prefix1/sounds/alarm_clock_sound.wav", this);
+
+    signal->setLoops(QSound::Infinite);
+    signal->play();
 
     if(clock->getType()==0)
     {
@@ -34,23 +40,27 @@ void SignalWindow::on_pushButton_stop_clicked()
 void SignalWindow::on_pushButton_plus1_clicked()
 {
     clock->delayBySec(1*60);
+    parent->updateTable();
     this->close();
 }
 
 void SignalWindow::on_pushButton_plus5_clicked()
 {
     clock->delayBySec(5*60);
+    parent->updateTable();
     this->close();
 }
 
 void SignalWindow::on_pushButton_plus10_clicked()
 {
     clock->delayBySec(10*60);
+    parent->updateTable();
     this->close();
 }
 
 void SignalWindow::on_pushButton_plus15_clicked()
 {
     clock->delayBySec(15*60);
+    parent->updateTable();
     this->close();
 }

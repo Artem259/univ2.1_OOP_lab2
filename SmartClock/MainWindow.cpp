@@ -81,12 +81,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
         timer->start(500);
         if(string!="")
         {
-            QMessageBox msgBox(QMessageBox::Information, "", "While the program was offline, the following clocks finished:\n\n"+string);
-            msgBox.setStyleSheet("QMessageBox QPushButton{"
-                                    "background-color: rgb(220, 240, 255);}"
-                                 "QMessageBox{"
-                                    "background-color: rgb(129, 190, 255);}");
-            stopClocks(finished);
+            stopClocks(finished, true);
             for(size_t i = 0; i<finished.size(); i++)
             {
                 if(!clocks[finished[i]].getRepeating())
@@ -95,12 +90,17 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
                     i--;
                 }
             }
-            startClocks(finished);
+            startClocks(finished, true);
+            QMessageBox msgBox(QMessageBox::Information, "", "While the program was offline, the following clocks finished:\n\n"+string);
+            msgBox.setStyleSheet("QMessageBox QPushButton{"
+                                    "background-color: rgb(220, 240, 255);}"
+                                 "QMessageBox{"
+                                    "background-color: rgb(129, 190, 255);}");
             msgBox.exec();
         }
         out.close();
     }
-    else timer->start(500);
+    else timer->start(1000);
 }
 
 MainWindow::~MainWindow()
@@ -152,12 +152,10 @@ void MainWindow::counting()
             ui->table->item(i,6)->setText(timeLeft.toString("hh : mm : ss"));
             if(secLeft<=0)
             {
-                clocks[index].setStatus(0);
-                clocks[index].setEndTime(0);
-                isClosestExists = false;
+                stopClocks({index}, false);
                 if(clocks[index].getRepeating())
                 {
-                    startClocks({index});
+                    startClocks({index}, false);
                 }
 
                 auto signalWindow = new SignalWindow(this, &clocks[index]);
@@ -261,26 +259,26 @@ void MainWindow::editClockWindow(const size_t& index)
     clockWindow->show();
 }
 
-void MainWindow::addNewClock(Clock *clock)
+void MainWindow::addNewClock(Clock *clock, const bool& updateTable)
 {
     clock->setStatus(0);
     clock->setId(this->clocks.size());
     clock->setEndTime(0);
     this->clocks.push_back(*clock);
     delete clock;
-    updateTable();
+    if(updateTable) this->updateTable();
 }
 
-void MainWindow::editClock(Clock* clock)
+void MainWindow::editClock(Clock* clock, const bool& updateTable)
 {
     clock->setStatus(0);
     clock->setId(currentIndex);
     clocks[currentIndex] = *clock;
     delete clock;
-    updateTable();
+    if(updateTable) this->updateTable();
 }
 
-void MainWindow::removeClocks(const std::vector<size_t>& indices)
+void MainWindow::removeClocks(const std::vector<size_t>& indices, const bool& updateTable)
 {
     bool removingClosest = false;
     QString string = "";
@@ -318,10 +316,10 @@ void MainWindow::removeClocks(const std::vector<size_t>& indices)
     {
         clocks[i].setId(i);
     }
-    updateTable();
+    if(updateTable) this->updateTable();
 }
 
-void MainWindow::startClocks(const std::vector<size_t>& indices)
+void MainWindow::startClocks(const std::vector<size_t>& indices, const bool& updateTable)
 {
     std::vector<size_t> copy = indices;
     QString string = "";
@@ -375,10 +373,10 @@ void MainWindow::startClocks(const std::vector<size_t>& indices)
             }
         }
     }
-    updateTable();
+    if(updateTable) this->updateTable();
 }
 
-void MainWindow::stopClocks(const std::vector<size_t>& indices)
+void MainWindow::stopClocks(const std::vector<size_t>& indices, const bool& updateTable)
 {
     for(size_t i = 0; i<indices.size(); i++)
     {
@@ -389,7 +387,7 @@ void MainWindow::stopClocks(const std::vector<size_t>& indices)
             isClosestExists = false;
         }
     }
-    updateTable();
+    if(updateTable) this->updateTable();
 }
 
 void MainWindow::addNewClockWindow_slot()
@@ -406,19 +404,19 @@ void MainWindow::editClockWindow_slot()
 void MainWindow::removeClocks_slot()
 {
     std::vector<size_t> selected = getSelected();
-    removeClocks(selected);
+    removeClocks(selected, true);
 }
 
 void MainWindow::startClocks_slot()
 {
     std::vector<size_t> selected = getSelected();
-    startClocks(selected);
+    startClocks(selected, true);
 }
 
 void MainWindow::stopClocks_slot()
 {
     std::vector<size_t> selected = getSelected();
-    stopClocks(selected);
+    stopClocks(selected, true);
 }
 
 void MainWindow::on_table_customContextMenuRequested(const QPoint &pos)
@@ -475,7 +473,7 @@ void MainWindow::on_addNewTool_triggered()
 void MainWindow::on_table_cellDoubleClicked(int row, int column)
 {
     std::vector<size_t> selected = getSelected();
-    if(clocks[selected[0]].getStatus()==1 || clocks[selected[0]].getStatus()==2) stopClocks(selected);
-    else startClocks(selected);
+    if(clocks[selected[0]].getStatus()==1 || clocks[selected[0]].getStatus()==2) stopClocks(selected, true);
+    else startClocks(selected, true);
 }
 

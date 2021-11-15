@@ -6,6 +6,7 @@
 
 ClockWindow::ClockWindow(MainWindow *parent, MainWindow::Clock *clock) : QDialog(parent), ui(new Ui::ClockWindow)
 {
+    setAttribute(Qt::WA_DeleteOnClose);
     ui->setupUi(this);
     this->parent = parent;
     this->clock = clock;
@@ -56,8 +57,8 @@ void ClockWindow::on_buttonBox_accepted()
     newClock->setValue(ui->timeEdit->time());
     newClock->setRepeating(ui->checkRepeating->isChecked());
 
-    if(!clock) parent->addNewClock(newClock); //adding new clock
-    else parent->editClock(newClock); //editing clock
+    if(!clock) parent->addNewClock(newClock, true); //adding new clock
+    else parent->editClock(newClock, true); //editing clock
 
     this->close();
 }

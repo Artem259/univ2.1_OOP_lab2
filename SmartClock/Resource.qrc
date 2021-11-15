@@ -5,5 +5,7 @@
         <file>images/signal.png</file>
         <file>images/signal[small].png</file>
         <file>images/add_clock.png</file>
+        <file>sounds/alarm_clock_sound.wav</file>
+        <file>sounds/timer_sound.wav</file>
     </qresource>
 </RCC>

@@ -2,6 +2,7 @@
 #define SIGNALWINDOW_H
 
 #include <QDialog>
+#include <QSound>
 #include "MainWindow.h"
 
 namespace Ui
@@ -26,6 +27,7 @@ private slots:
 private:
     Ui::SignalWindow *ui;
     MainWindow::Clock *clock;
+    QSound *signal;
 protected:
     MainWindow *parent;
 };
