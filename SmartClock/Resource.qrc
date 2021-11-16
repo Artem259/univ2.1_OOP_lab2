@@ -2,7 +2,6 @@
     <qresource prefix="/prefix1">
         <file>images/timer.png</file>
         <file>images/signal.png</file>
-        <file>images/signal[small].png</file>
         <file>sounds/alarm_clock_sound.wav</file>
         <file>sounds/timer_sound.wav</file>
         <file>images/turn_off.png</file>
@@ -11,7 +10,6 @@
         <file>images/do_not_disturb_off.png</file>
         <file>images/do_not_disturb_scheduled.png</file>
         <file>images/icon.ico</file>
-        <file>images/icon.png</file>
         <file>images/add_clock.png</file>
         <file>images/alarm_clock.png</file>
     </qresource>

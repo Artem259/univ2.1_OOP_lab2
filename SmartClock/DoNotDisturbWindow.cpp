@@ -21,7 +21,7 @@ DoNotDisturbWindow::~DoNotDisturbWindow()
 
 void DoNotDisturbWindow::on_buttonBox_accepted()
 {
-    if(ui->timeEditFrom->time() == ui->timeEditTo->time())
+    if(ui->timeEditFrom->time() == ui->timeEditTo->time() && ui->scheduled->isChecked())
     {
         QMessageBox msgBox(QMessageBox::Critical, "Error", "The values of the times \"From\" and \"To\" can't be equal.");
         msgBox.setStyleSheet("QMessageBox QPushButton{"
