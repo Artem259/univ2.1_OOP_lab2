@@ -48,8 +48,21 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     out.open("config.dat");
     if(out.is_open())
     {
+        QRect pos;
         size_t width;
-        int sortingCol;
+        int coord, sortingCol;
+
+        //read position of the MainWindow on screen
+        out >> coord;
+        pos.setLeft(coord);
+        out >> coord;
+        pos.setTop(coord);
+        out >> coord;
+        pos.setRight(coord);
+        out >> coord;
+        pos.setBottom(coord);
+        this->setGeometry(pos);
+
         for(size_t i = 0; i<ui->table->horizontalHeader()->count(); i++) //read columns width
         {
             out >> width;
@@ -134,6 +147,12 @@ MainWindow::~MainWindow()
     in.open("config.dat", std::ios_base::trunc);
     if(in.is_open())
     {
+        //write position of the MainWindow on screen
+        in << this->geometry().left() << " ";
+        in << this->geometry().top() << " ";
+        in << this->geometry().right() << " ";
+        in << this->geometry().bottom() << " ";
+
         for(size_t i = 0; i<ui->table->horizontalHeader()->count(); i++) //write columns width
         {
             in << ui->table->horizontalHeader()->sectionSize(i) << " ";
