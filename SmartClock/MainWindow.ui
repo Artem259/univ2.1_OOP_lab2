@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>963</width>
-    <height>500</height>
+    <width>943</width>
+    <height>473</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -139,7 +139,7 @@ QTableView
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>963</width>
+     <width>943</width>
      <height>21</height>
     </rect>
    </property>
@@ -196,6 +196,7 @@ border: none;</string>
     <bool>false</bool>
    </attribute>
    <addaction name="addNewTool"/>
+   <addaction name="actionDo_Not_Disturb"/>
    <addaction name="separator"/>
   </widget>
   <action name="addNewTool">
@@ -209,8 +210,17 @@ border: none;</string>
    <property name="toolTip">
     <string>Add new</string>
    </property>
-   <property name="shortcut">
-    <string>Ctrl+=, Ctrl++</string>
+  </action>
+  <action name="actionDo_Not_Disturb">
+   <property name="icon">
+    <iconset resource="Resource.qrc">
+     <normaloff>:/prefix1/images/do_not_disturb_scheduled.png</normaloff>:/prefix1/images/do_not_disturb_scheduled.png</iconset>
+   </property>
+   <property name="text">
+    <string>Do Not Disturb</string>
+   </property>
+   <property name="toolTip">
+    <string>Do Not Disturb</string>
    </property>
   </action>
  </widget>

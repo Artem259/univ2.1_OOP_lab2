@@ -154,6 +154,27 @@ void MainWindow::Clock::delayBySec(const qint64& seconds)
     endTime = QDateTime::currentSecsSinceEpoch() + seconds;
 }
 
+
+std::ostream& operator <<(std::ostream &in, const QTime &time)
+{
+    in << time.hour() << " "; //write hours
+    in << time.minute() << " "; //write minutes
+    in << time.second() << " "; //write seconds
+    return in;
+}
+
+std::istream& operator >>(std::istream &out, QTime &time)
+{
+    size_t data;
+    out >> data; //read hours
+    time = QTime(0,0,0).addSecs(data*3600); //set hours
+    out >> data; //read minutes
+    time = time.addSecs(data*60); //set minutes
+    out >> data; //read seconds
+    time = time.addSecs(data); //set seconds
+    return out;
+}
+
 std::ostream& operator <<(std::ostream &in, const MainWindow::Clock &clock)
 {
     in << clock.getId() << " "; //Id
@@ -161,9 +182,7 @@ std::ostream& operator <<(std::ostream &in, const MainWindow::Clock &clock)
     in << clock.getName().toStdString() << " "; //Name
     in << clock.getType() << " "; //Type
     in << clock.getStatus() << " "; //Status
-    in << clock.getValue().hour() << " "; //Value.hour
-    in << clock.getValue().minute() << " "; //Value.minute
-    in << clock.getValue().second() << " "; //Value.second
+    in << clock.getValue(); //Value (defined higher)
     in << clock.getEndTime() << " "; //End time
     in << clock.getRepeating(); //Repeating
     return in;
@@ -174,6 +193,7 @@ std::istream& operator >>(std::istream &out, MainWindow::Clock &clock)
     char c;
     char *name;
     size_t data;
+    QTime value;
     qint64 endTime;
 
     std::ios_base::fmtflags flags(out.flags());
@@ -199,14 +219,8 @@ std::istream& operator >>(std::istream &out, MainWindow::Clock &clock)
     clock.setType(data); //set Type
     out >> data; //read Status
     clock.setStatus(data); //set Status
-
-    out >> data; //read Value.hour
-    clock.setValue(QTime(0,0,0).addSecs(data*3600)); //set Value.hour
-    out >> data; //read Value.minute
-    clock.setValue(clock.getValue().addSecs(data*60)); //set Value.minute
-    out >> data; //read Value.second
-    clock.setValue(clock.getValue().addSecs(data)); //set Value.second
-
+    out >> value; //read Value (defined higher)
+    clock.setValue(value); //set Value
     out >> endTime; //read EndTime
     clock.setEndTime(endTime); //set EndTime
     out >> data; //read Repeating

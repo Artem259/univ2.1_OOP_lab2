@@ -9,11 +9,16 @@ SignalWindow::SignalWindow(MainWindow *parent, MainWindow::Clock *clock) : QDial
     ui->setupUi(this);
     this->parent = parent;
     this->clock = clock;
-    if(clock->getType()==0) this->signal = new QSound(":/prefix1/sounds/timer_sound.wav", this);
-    else if(clock->getType()==1) this->signal = new QSound(":/prefix1/sounds/alarm_clock_sound.wav", this);
+    this->signal = nullptr;
 
-    signal->setLoops(QSound::Infinite);
-    signal->play();
+    if(parent->getStatusDoNotDisturb() == 0)
+    {
+        if(clock->getType()==0) this->signal = new QSound(":/prefix1/sounds/timer_sound.wav", this);
+        else //clock->getType()==1
+            this->signal = new QSound(":/prefix1/sounds/alarm_clock_sound.wav", this);
+        signal->setLoops(QSound::Infinite);
+        signal->play();
+    }
 
     if(clock->getType()==0)
     {

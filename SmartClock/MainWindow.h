@@ -2,10 +2,8 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include <vector>
 #include <QTime>
-
-
+#include <vector>
 
 QT_BEGIN_NAMESPACE
 namespace Ui
@@ -20,6 +18,8 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
+
+    short getStatusDoNotDisturb() const;
 
     class Clock
     {
@@ -66,6 +66,7 @@ public:
     void stopClocks(const std::vector<size_t>& indices, const bool& updateTable);
 
     void updateTable();
+    void updateDoNotDisturbIcon();
 private slots:    
     void addNewClockWindow_slot();
     void editClockWindow_slot();
@@ -74,22 +75,32 @@ private slots:
     void stopClocks_slot();
 
     void counting();
+    void updateDoNotDisturb();
     void on_table_customContextMenuRequested(const QPoint &pos);
     void on_addNewTool_triggered();
     void on_table_cellDoubleClicked(int row, int column);
+
+    void on_actionDo_Not_Disturb_triggered();
 
 private:
     Ui::MainWindow *ui;
     std::vector<Clock> clocks;
     size_t indexOfClosest;
     bool isClosestExists;
-    size_t currentIndex;
+    size_t currentIndex; //for edititng clock
+
+    QTimer *doNotDisturbTimer;
+    short statusDoNotDisturb; //0->off, 1->active(scheduled), 2->active(forced)
+    QTime startDoNotDisturb;
+    QTime endDoNotDisturb;
 
     bool eventFilter(QObject *obj, QEvent *ev);
     void addNewClockWindow();
     void editClockWindow(const size_t& index);
 };
 
+std::ostream& operator <<(std::ostream &in, const QTime &time);
+std::istream& operator >>(std::istream &out, QTime &time);
 std::ostream& operator <<(std::ostream &in, const MainWindow::Clock &clock);
 std::istream& operator >>(std::istream &out, MainWindow::Clock &clock);
 

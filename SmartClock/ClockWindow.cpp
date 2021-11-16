@@ -49,6 +49,18 @@ void ClockWindow::on_buttonBox_accepted()
         return;
     }
 
+    qint64 valueToSec = ui->timeEdit->time().hour()*3600 + ui->timeEdit->time().minute()*60 + ui->timeEdit->time().second();
+    if(valueToSec<10 && ui->radioButtonTimer->isChecked() && ui->checkRepeating->isChecked())
+    {
+        QMessageBox msgBox(QMessageBox::Critical, "Error", "You can't set repeating timers below 10 seconds.");
+        msgBox.setStyleSheet("QMessageBox QPushButton{"
+                                "background-color: rgb(220, 240, 255);}"
+                             "QMessageBox{"
+                                "background-color: rgb(129, 190, 255);}");
+        msgBox.exec();
+        return;
+    }
+
     auto newClock = new MainWindow::Clock(parent);
 
     newClock->setName(ui->nameEdit->text());

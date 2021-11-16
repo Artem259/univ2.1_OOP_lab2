@@ -8,9 +8,11 @@
 #include "MainWindow.h"
 #include "ClockWindow.h"
 #include "SignalWindow.h"
+#include "DoNotDisturbWindow.h"
 #include "ui_MainWindow.h"
-#include <QDebug>
 
+#include <QDebug>
+#include <QLabel>
 
 bool MainWindow::eventFilter(QObject *obj, QEvent *event)
 {
@@ -27,8 +29,12 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     isClosestExists = false;
     currentIndex = 0;
 
-    QTimer *timer = new QTimer(this);
-    connect(timer, SIGNAL(timeout()), this, SLOT(counting()));
+    QTimer *clockTimer = new QTimer(this);
+    connect(clockTimer, SIGNAL(timeout()), this, SLOT(counting()));
+
+    doNotDisturbTimer = new QTimer(this);
+    doNotDisturbTimer->setSingleShot(true);
+    connect(clockTimer, SIGNAL(timeout()), this, SLOT(updateDoNotDisturb()));
 
     QStringList horizHeaders;
     horizHeaders << "№" << "Name" << "Type" << "Status" << "Value" << "End time" << "Time left" << "Repeating";
@@ -60,6 +66,22 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
         out.close();
     }
 
+    out.open("do_not_disturb.dat");
+    if(out.is_open())
+    {
+        out >> statusDoNotDisturb;
+        out >> startDoNotDisturb;
+        out >> endDoNotDisturb;
+        out.close();
+    }
+    else
+    {
+        statusDoNotDisturb = 0;
+        startDoNotDisturb = QTime(0,0,0);
+        endDoNotDisturb = QTime(0,0,0);
+    }
+    updateDoNotDisturb();
+
     out.open("clocks.dat");
     if(out.is_open())
     {
@@ -78,7 +100,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
         }
         this->show();
         updateTable();
-        timer->start(500);
+        clockTimer->start(1000);
         if(string!="")
         {
             stopClocks(finished, true);
@@ -100,7 +122,12 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
         }
         out.close();
     }
-    else timer->start(1000);
+    else clockTimer->start(1000);
+    QLabel *stat = new QLabel("Hello");
+        stat->setAlignment(Qt::AlignRight);
+
+        statusBar()->addWidget(stat, 1);
+
 }
 
 MainWindow::~MainWindow()
@@ -123,6 +150,15 @@ MainWindow::~MainWindow()
         in.close();
     }
 
+    in.open("do_not_disturb.dat", std::ios_base::trunc);
+    if(in.is_open())
+    {
+        in << statusDoNotDisturb << " ";
+        in << startDoNotDisturb;
+        in << endDoNotDisturb;
+        in.close();
+    }
+
     in.open("clocks.dat", std::ios_base::trunc);
     if(in.is_open())
     {
@@ -133,7 +169,13 @@ MainWindow::~MainWindow()
         }
         in.close();
     }
+
     delete ui;
+}
+
+short MainWindow::getStatusDoNotDisturb() const
+{
+    return statusDoNotDisturb;
 }
 
 void MainWindow::counting()
@@ -178,14 +220,15 @@ void MainWindow::counting()
         }
     }
     ui->table->setSortingEnabled(true);
+
     if(isClosestExists)
     {
         timeLeft = QTime(0,0,0).addSecs(clocks[indexOfClosest].getEndTime() - QDateTime::currentSecsSinceEpoch());
-        ui->statusbar->showMessage(timeLeft.toString("hh : mm : ss - ")+clocks[indexOfClosest].getName());
+        statusBar()->showMessage(timeLeft.toString("hh : mm : ss - ")+clocks[indexOfClosest].getName());
     }
     else
     {
-        ui->statusbar->showMessage("No active clocks");
+        statusBar()->showMessage("No active clocks");
     }
 }
 
@@ -216,6 +259,50 @@ void MainWindow::updateTable()
     }
 
     ui->table->setSortingEnabled(sorting);
+}
+
+void MainWindow::updateDoNotDisturb()
+{
+    if(statusDoNotDisturb!=2 && (startDoNotDisturb!=QTime(0,0,0) && endDoNotDisturb!=QTime(0,0,0)))
+    {
+        qint64 currMSec = QTime::currentTime().msecsSinceStartOfDay();
+        qint64 startMSec = startDoNotDisturb.msecsSinceStartOfDay();
+        qint64 endMSec = endDoNotDisturb.msecsSinceStartOfDay();
+        if(startMSec < endMSec)
+        {
+            if(currMSec<startMSec || currMSec>endMSec)
+            {
+                statusDoNotDisturb = 0;
+                doNotDisturbTimer->start(startMSec-currMSec);
+            }
+            else
+            {
+                statusDoNotDisturb = 1;
+                doNotDisturbTimer->start(endMSec-currMSec);
+            }
+        }
+        else
+        {
+            if(currMSec>startMSec || currMSec<endMSec)
+            {
+                statusDoNotDisturb = 1;
+                doNotDisturbTimer->start(endMSec-currMSec);
+            }
+            else
+            {
+                statusDoNotDisturb = 0;
+                doNotDisturbTimer->start(startMSec-currMSec);
+            }
+        }
+    }
+    updateDoNotDisturbIcon();
+}
+
+void MainWindow::updateDoNotDisturbIcon()
+{
+    if(statusDoNotDisturb==0) ui->actionDo_Not_Disturb->setIcon(QIcon(":/prefix1/images/do_not_disturb_off.png"));
+    else if(statusDoNotDisturb==1) ui->actionDo_Not_Disturb->setIcon(QIcon(":/prefix1/images/do_not_disturb_scheduled.png"));
+    else if(statusDoNotDisturb==2) ui->actionDo_Not_Disturb->setIcon(QIcon(":/prefix1/images/do_not_disturb_forced.png"));
 }
 
 std::vector<size_t> MainWindow::getSelected() const
@@ -470,10 +557,19 @@ void MainWindow::on_addNewTool_triggered()
     addNewClockWindow();
 }
 
+void MainWindow::on_actionDo_Not_Disturb_triggered()
+{
+    auto doNotDisturbWindow = new DoNotDisturbWindow(this);
+    doNotDisturbWindow->setModal(true);
+    doNotDisturbWindow->setWindowTitle("Do Not Disturb settings");
+    doNotDisturbWindow->show();
+}
+
 void MainWindow::on_table_cellDoubleClicked(int row, int column)
 {
     std::vector<size_t> selected = getSelected();
     if(clocks[selected[0]].getStatus()==1 || clocks[selected[0]].getStatus()==2) stopClocks(selected, true);
     else startClocks(selected, true);
 }
+
 
