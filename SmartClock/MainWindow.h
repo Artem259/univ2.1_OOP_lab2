@@ -20,6 +20,14 @@ public:
     ~MainWindow();
 
     short getStatusDoNotDisturb() const;
+    bool getIsScheduledDoNotDisturb() const;
+    QTime getStartDoNotDisturb() const;
+    QTime getEndDoNotDisturb() const;
+
+    void setStatusDoNotDisturb(const short &status);
+    void setIsScheduledDoNotDisturb(const bool& is);
+    void setStartDoNotDisturb(const QTime &time);
+    void setEndDoNotDisturb(const QTime &time);
 
     class Clock
     {
@@ -66,6 +74,7 @@ public:
     void stopClocks(const std::vector<size_t>& indices, const bool& updateTable);
 
     void updateTable();
+    void updateDoNotDisturb();
     void updateDoNotDisturbIcon();
 private slots:    
     void addNewClockWindow_slot();
@@ -75,7 +84,7 @@ private slots:
     void stopClocks_slot();
 
     void counting();
-    void updateDoNotDisturb();
+    void updateDoNotDisturb_slot();
     void on_table_customContextMenuRequested(const QPoint &pos);
     void on_addNewTool_triggered();
     void on_table_cellDoubleClicked(int row, int column);
@@ -91,6 +100,7 @@ private:
 
     QTimer *doNotDisturbTimer;
     short statusDoNotDisturb; //0->off, 1->active(scheduled), 2->active(forced)
+    bool isScheduledDoNotDisturb;
     QTime startDoNotDisturb;
     QTime endDoNotDisturb;
 

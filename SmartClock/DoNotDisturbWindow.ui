@@ -22,7 +22,7 @@
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="3" column="0">
-    <widget class="QGroupBox" name="groupBox">
+    <widget class="QGroupBox" name="scheduled">
      <property name="font">
       <font>
        <pointsize>14</pointsize>
@@ -78,7 +78,7 @@
        </widget>
       </item>
       <item row="1" column="1">
-       <widget class="QTimeEdit" name="timeEdit_2">
+       <widget class="QTimeEdit" name="timeEditTo">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
           <horstretch>0</horstretch>
@@ -103,7 +103,7 @@
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="QTimeEdit" name="timeEdit">
+       <widget class="QTimeEdit" name="timeEditFrom">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
           <horstretch>0</horstretch>
@@ -141,7 +141,7 @@
     </widget>
    </item>
    <item row="0" column="0">
-    <widget class="QCheckBox" name="checkBox">
+    <widget class="QCheckBox" name="checkBoxDoNotDisturb">
      <property name="font">
       <font>
        <pointsize>14</pointsize>

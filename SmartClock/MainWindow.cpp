@@ -34,7 +34,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 
     doNotDisturbTimer = new QTimer(this);
     doNotDisturbTimer->setSingleShot(true);
-    connect(clockTimer, SIGNAL(timeout()), this, SLOT(updateDoNotDisturb()));
+    connect(doNotDisturbTimer, SIGNAL(timeout()), this, SLOT(updateDoNotDisturb_slot()));
 
     QStringList horizHeaders;
     horizHeaders << "№" << "Name" << "Type" << "Status" << "Value" << "End time" << "Time left" << "Repeating";
@@ -70,6 +70,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     if(out.is_open())
     {
         out >> statusDoNotDisturb;
+        out >> isScheduledDoNotDisturb;
         out >> startDoNotDisturb;
         out >> endDoNotDisturb;
         out.close();
@@ -77,6 +78,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     else
     {
         statusDoNotDisturb = 0;
+        isScheduledDoNotDisturb = false;
         startDoNotDisturb = QTime(0,0,0);
         endDoNotDisturb = QTime(0,0,0);
     }
@@ -123,11 +125,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
         out.close();
     }
     else clockTimer->start(1000);
-    QLabel *stat = new QLabel("Hello");
-        stat->setAlignment(Qt::AlignRight);
-
-        statusBar()->addWidget(stat, 1);
-
 }
 
 MainWindow::~MainWindow()
@@ -154,6 +151,7 @@ MainWindow::~MainWindow()
     if(in.is_open())
     {
         in << statusDoNotDisturb << " ";
+        in << isScheduledDoNotDisturb << " ";
         in << startDoNotDisturb;
         in << endDoNotDisturb;
         in.close();
@@ -176,6 +174,41 @@ MainWindow::~MainWindow()
 short MainWindow::getStatusDoNotDisturb() const
 {
     return statusDoNotDisturb;
+}
+
+bool MainWindow::getIsScheduledDoNotDisturb() const
+{
+    return isScheduledDoNotDisturb;
+}
+
+QTime MainWindow::getStartDoNotDisturb() const
+{
+    return startDoNotDisturb;
+}
+
+QTime MainWindow::getEndDoNotDisturb() const
+{
+    return endDoNotDisturb;
+}
+
+void MainWindow::setStatusDoNotDisturb(const short &status)
+{
+    statusDoNotDisturb = status;
+}
+
+void MainWindow::setIsScheduledDoNotDisturb(const bool& is)
+{
+    isScheduledDoNotDisturb = is;
+}
+
+void MainWindow::setStartDoNotDisturb(const QTime &time)
+{
+    startDoNotDisturb = time;
+}
+
+void MainWindow::setEndDoNotDisturb(const QTime &time)
+{
+    endDoNotDisturb = time;
 }
 
 void MainWindow::counting()
@@ -232,6 +265,11 @@ void MainWindow::counting()
     }
 }
 
+void MainWindow::updateDoNotDisturb_slot()
+{
+    updateDoNotDisturb();
+}
+
 void MainWindow::updateTable()
 {
     ui->table->selectionModel()->clearSelection();
@@ -263,37 +301,55 @@ void MainWindow::updateTable()
 
 void MainWindow::updateDoNotDisturb()
 {
-    if(statusDoNotDisturb!=2 && (startDoNotDisturb!=QTime(0,0,0) && endDoNotDisturb!=QTime(0,0,0)))
+    if(isScheduledDoNotDisturb && statusDoNotDisturb!=2)
     {
         qint64 currMSec = QTime::currentTime().msecsSinceStartOfDay();
         qint64 startMSec = startDoNotDisturb.msecsSinceStartOfDay();
         qint64 endMSec = endDoNotDisturb.msecsSinceStartOfDay();
         if(startMSec < endMSec)
         {
-            if(currMSec<startMSec || currMSec>endMSec)
+            if(currMSec < startMSec)
             {
                 statusDoNotDisturb = 0;
-                doNotDisturbTimer->start(startMSec-currMSec);
+                doNotDisturbTimer->start(startMSec-currMSec+1000);
+            }
+            else if(currMSec < endMSec)
+            {
+                statusDoNotDisturb = 1;
+                doNotDisturbTimer->start(endMSec-currMSec+1000);
             }
             else
             {
-                statusDoNotDisturb = 1;
-                doNotDisturbTimer->start(endMSec-currMSec);
+                statusDoNotDisturb = 0;
+                doNotDisturbTimer->start(86400*1000-currMSec+startMSec+1000);
             }
         }
         else
         {
-            if(currMSec>startMSec || currMSec<endMSec)
+            if(currMSec < endMSec)
             {
                 statusDoNotDisturb = 1;
-                doNotDisturbTimer->start(endMSec-currMSec);
+                doNotDisturbTimer->start(endMSec-currMSec+1000);
+            }
+            else if(currMSec < startMSec)
+            {
+                statusDoNotDisturb = 0;
+                doNotDisturbTimer->start(startMSec-currMSec+1000);
             }
             else
             {
-                statusDoNotDisturb = 0;
-                doNotDisturbTimer->start(startMSec-currMSec);
+                statusDoNotDisturb = 1;
+                doNotDisturbTimer->start(86400*1000-currMSec+endMSec+1000);
             }
         }
+
+        qint64 a = doNotDisturbTimer->interval()/*+QTime::currentTime().msecsSinceStartOfDay()*/;
+        qDebug() << QTime(0,0,0).addMSecs(a).toString("hh:mm:ss");
+    }
+    else if(!isScheduledDoNotDisturb && statusDoNotDisturb==1)
+    {
+        statusDoNotDisturb = 0;
+        doNotDisturbTimer->stop();
     }
     updateDoNotDisturbIcon();
 }
